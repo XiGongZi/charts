@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- <link rel="stylesheet" href="index.css" /> -->
+  </head>
+  <body>
+    <canvas
+      style="background: #f2f2f2"
+      id="canvas"
+      width="900"
+      height="300"
+    ></canvas>
+  </body>
+  <script type="module">
+    import WaterFall from "../src/waterfall.js";
+    // 传入canvas的元素ID
+    let flow = new WaterFall("canvas");
+    // 初始化
+    flow.init();
+    // 更新数据 传入每一行应显示的数据数组,如 [2,3,1,4,5]
+    setInterval(() => {
+      flow.update([100, 60, 40, 20, 40, 50, 100, 40, 30]);
+    }, 50);
+  </script>
+</html>
