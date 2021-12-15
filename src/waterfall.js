@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2021-12-15 08:37:30
+ * @Last Modified time: 2021-12-15 13:01:04
  */
 let globalConfig = {
   // 左侧图例色块宽度

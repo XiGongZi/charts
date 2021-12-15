@@ -37,3 +37,27 @@ for (let i = 0; i < 100; i++) {
   - [接口与文档](./docs/waterflow/index.md)
   - 页面示例 `/example/waterfall.html`
   - 图片示例 ![](./assets/images/waterfall.png)
+
+### 使用到的 canvas api
+
+- ctx.clearRect 清除矩形区域像素
+- ctx.createLinearGradient 创建渐变带
+- lineargradient.addColorStop 为渐变带增加渐变色
+- ctx.fillRect 根据当前样式配置生成矩形
+- ctx.fillText 填充文本
+- ctx.save 保存 canvas 样式信息
+- ctx.restore 恢复上一次存储的 canvas 样式信息
+
+## 流程说明
+
+```mermaid
+flowchart TD
+a1(创建画布)-->a2(设置全局配置\ny轴范围\n色块颜色\n等)
+a2--> a3(生成必要参数\n绘制背景图)
+a4(提交数据)-->a5(过滤数据大小为目标物理像素大小)
+a5-->a6(维护颜色等数据数组长度\n超出后先进先出)
+a6-->a7(根据色块示例获取传入数据所对应的颜色并推入颜色数组\n其他如日期数组也类似)
+a7-->a8(更新视图调用update方法)
+a8-->a9(渲染中间图像)-->a11(清空中间画布\n遍历颜色数组\n根据下标指定y轴位置\n根据色块信息填充颜色)
+a8-->a10(渲染右侧日期文本)-->a12(清空右侧画布\n遍历日期数组\n根据下标指定y轴位置\n根据文本信息填充文本)
+```
