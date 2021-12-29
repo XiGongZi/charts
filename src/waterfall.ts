@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2021-12-29 16:41:24
+ * @Last Modified time: 2021-12-29 17:05:49
  */
 /**
  * 
@@ -507,12 +507,14 @@ class Draw extends Utils {
      * @description 渲染右侧时间文本，清除右侧空间后，遍历dateData方法并调用draw绘制
      */
     renderRightText() {
+        // clear rect
         this.ctx.clearRect(
             this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth,
             0,
             this.globalConfig.rightBlockTextWidth,
             this.globalConfig.totalHeight
         );
+        // redraw text
         this.dateData.forEach((ele) => {
             if (ele) {
                 ele.draw();
@@ -542,16 +544,12 @@ class Draw extends Utils {
     }
     /**
      *
-     * @param {Array} data 最新数据，
+     * @param {IInputDataArr} data 最新数据，
      * @description 提交最新数据到内部存储空间，生成对应数据并且维护数据大小。执行完毕后调用 update() 方法更新数据
      */
     commit(_data: IInputDataArr) {
         // 【优化】根据需要显示的像素数量筛选出目标数量的数据
         const data = this.filter({ target: this.pixelShow, data: _data });
-        // console.log(_data.length);
-        // console.log(this.pixelShow);
-        // log 测试data数据 请删除
-        // if (window.handleFlag) console.log(this.globalConfig, this.dateData);
         if (!Array.isArray(data)) console.error('commit function need Array!');
         const len = this.originColor.length;
         // let len = this.originData.length;
@@ -562,32 +560,38 @@ class Draw extends Utils {
             this.dateData.pop();
         }
         // this.originData.push(data);
-
-        // console.log(data[0] + data[1] + data[2] + data[3]);
-
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
             this.checkIsDateNum = 0;
         }
         const colorArr = this.checkArround(data, this.dataLimit);
         this.originColor.unshift(colorArr);
-        // this.originData.unshift(colorArr);
+        // this.originData.unshift(data);
         // checkIsDateNum 等于一个比 checkIsDateNumLimit小的数就可以了，这样checkIsDateNum在0到checkIsDateNumLimit循环的时候有一次对应上就赋值日期
         this.dateData.unshift(this.setRightDateHtml(!this.checkIsDateNum));
         this.update();
         this.checkIsDateNum++;
     }
 }
-class WaterFall {
+interface IWaterFall {
+    initData: number;
+    initData1: number;
+    isInit: boolean;
+    element: string;
+    chart: Draw;
+    init: (data: object) => void;
+    resize: () => void;
+    update: (data: IInputDataArr) => void;
+}
+class WaterFall implements IWaterFall {
     initData = 0;
     initData1 = 0;
     isInit = false;
     element = '';
-    chart: Draw;
+    chart;
     constructor(element: string) {
         if (!element) console.error("new WaterFall id('id');id is not defined!");
         this.element = element;
         this.chart = new Draw(this.element, {});
-        // this.chart = this.chart.init();
     }
     /**
      * @name init
