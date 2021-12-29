@@ -2,10 +2,11 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2021-12-29 15:56:07
+ * @Last Modified time: 2021-12-29 16:41:24
  */
 /**
  * 
+    interface 全局配置项  
     leftBlockColorWidth: number,
     左侧图例色块宽度  
     leftBlockTextWidth: number,
@@ -69,38 +70,60 @@ interface IglobalConfig {
     // 左侧显示的颜色梯度示例
     colorArr: Array<string>;
 }
+/**
+    用于给数组 @type IInputDataArr 每一项确定颜色  
+    以接口的max和min为依据，范围内则使用对应的color  
+ */
 interface IselectArround {
     max: number;
     min: number;
     color: string;
 }
+/**
+    用于给数组 @type IInputDataArr 每一项确定颜色  
+    每一项都有max mix color属性  
+    以每一项的max和min为依据，范围内则使用对应的color  
+ */
+type IselectArroundArr = Array<IselectArround>;
+/**
+    xy坐标
+ */
 interface IsetPosi {
     x: number;
     y: number;
 }
+/**
+ * ctx.fillText 需要用到的参数
+ */
 interface IsetText extends IsetPosi {
     ctx: CanvasRenderingContext2D;
     text?: string;
     textAlign?: 'left' | 'right' | 'center';
 }
+/**
+ * waterFallTextInput 类需要传入的基本值
+ */
 interface IwaterFallTextInput extends IsetText {
     step?: number;
 }
-// interface IInputDataArr {
-
-// }
 /**
  * 输入的元数据，应为每个元素都为number的数组
  */
 type IInputDataArr = Array<number>;
-type IInputDataColorArr = Array<string>;
 /**
- * originColor，
- * 表示瀑布流的所有数据
- * 数组的每一项是 IInputDataArr
+ * 存储瀑布图每一行数据对应的颜色值
  */
-type IoriginData = Array<IInputDataArr>;
+type IInputDataColorArr = Array<string>;
+// type IoriginData = Array<IInputDataArr>;
+/**
+    表示瀑布流的所有数据  
+    数组的每一项是 IInputDataArr  
+    
+ */
 type IoriginColor = Array<IInputDataColorArr>;
+/**
+ * 全局默认配置
+ */
 const globalConfig: IglobalConfig = {
     /**
      * 左侧图例色块宽度
@@ -180,7 +203,11 @@ const globalConfig: IglobalConfig = {
     ]
 };
 
-// 文本自动根据step重新绘制在新位置的类
+/**
+    瀑布流文本绘制类    
+    文本自动根据step  
+    在使用draw方法后更新坐标  
+ */
 class WaterFallText implements IwaterFallTextInput {
     x;
     y;
@@ -215,7 +242,7 @@ class WaterFallText implements IwaterFallTextInput {
 // 工具类
 class Utils {
     // 从源数据中过滤出目标数量，尽量平均
-    filter({ target = 300, data = [] }: { target: number; data: Array<number> }): Array<number> {
+    filter({ target = 300, data = [] }: { target: number; data: IInputDataArr }): IInputDataArr {
         const len = data.length;
         // 小于等于target
         if (len <= target) return data;
@@ -225,7 +252,7 @@ class Utils {
          * 然后取每一个格子内的最后一个整数，作为下标去取源数据对应的像素颜色
          */
         const step = len / target;
-        const arr: Array<number> = [];
+        const arr: IInputDataArr = [];
         let num = step;
         for (let i = 0; i < target; i++) {
             arr.push(data[Math.floor(num) - 1]);
@@ -249,16 +276,16 @@ class Utils {
         ctx.restore();
     }
     // 给定数组数值，输出对象的范围
-    checkArround(arr: Array<number> = [], arrColor: Array<IselectArround> = []): Array<string> {
-        const res: Array<string> = [];
+    checkArround(arr: IInputDataArr = [], arrColor: IselectArroundArr = []): IInputDataColorArr {
+        const res: IInputDataColorArr = [];
         // 算法优化
         // O(mn)  =>
         arr.forEach((ele, index) => {
             let flag = false;
             arrColor.forEach((item) => {
                 if (!flag) {
-                    const equal = ele >= item.min && ele <= item.max;
-                    if (equal) {
+                    // 如果在范围内则push
+                    if (ele >= item.min && ele <= item.max) {
                         flag = true;
                         res.push(item.color);
                     }
@@ -269,9 +296,13 @@ class Utils {
         });
         return res;
     }
-    // 设置幅度颜色，后续根据颜色生成幅度与每一层刻度
-    genDataLimit({ minMax = [-20, 120], colorArr = [] }: IglobalConfig): Array<IselectArround> {
-        const finArr: Array<IselectArround> = [];
+    /**
+     *
+     * @param param0 interface IglobalConfig
+     * @returns 设置幅度颜色，后续根据颜色生成幅度与每一层刻度
+     */
+    genDataLimit({ minMax = [-20, 120], colorArr = [] }: IglobalConfig): IselectArroundArr {
+        const finArr: IselectArroundArr = [];
         const min = minMax[0];
         const max = minMax[1];
         const arrLen = colorArr.length;
@@ -293,7 +324,7 @@ class Draw extends Utils {
     ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D();
     element: string;
     globalConfig: IglobalConfig;
-    dataLimit: Array<IselectArround> = [];
+    dataLimit: IselectArroundArr = [];
     // 中间区域所需显示的像素数量
     pixelShow = 1;
     // originData = [];
@@ -338,7 +369,7 @@ class Draw extends Utils {
             element.width - leftBlockColorWidth - leftBlockTextWidth - rightBlockTextWidth;
         this.globalConfig = {
             ...this.globalConfig,
-            rightTextGap: parseInt((element.height / rightTextGapNum).toString()),
+            rightTextGap: parseInt((element.height / rightTextGapNum).toString(), 10),
             // 总宽度
             totalWidth: element.width,
             // 总高度度
