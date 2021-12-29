@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2021-12-15 13:01:04
+ * @Last Modified time: 2021-12-17 08:52:27
  */
 let globalConfig = {
   // 左侧图例色块宽度
@@ -80,13 +80,16 @@ class Utils {
     //小于等于target
     if (len <= target) return data;
     // 若大于target
-    let step = Math.floor(len / target);
-    let startSetp = Math.floor(len / (target + 1));
+    /**
+     * 先按照矩形拆成目标个数的格子
+     * 然后取每一个格子内的最后一个整数，作为下标去取源数据对应的像素颜色
+     */
+    let step = len / target;
     let arr = [];
-    // let num = 0;
+    let num = step;
     for (let i = 0; i < target; i++) {
-      arr.push(data[startSetp]);
-      startSetp += step;
+      arr.push(data[Math.floor(num) - 1]);
+      num += step;
     }
     return arr;
   }
@@ -107,7 +110,8 @@ class Utils {
   }
   // 给定数组数值，输出对象的范围
   checkArround(
-    arr = [1, 2],
+    //
+    arr = [1, 2, 29],
     arrColor = [
       {
         max: 10,

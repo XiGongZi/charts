@@ -22,11 +22,8 @@ const options = {
   // ...配置项，可不填
 };
 flow.init(options);
+flow.update([100, 20, 30]);
 
-for (let i = 0; i < 100; i++) {
-  // 需要更新数据时调用update方法
-  flow.update([100, 20, 30]);
-}
 ```
 
 ## 三、图表文档
