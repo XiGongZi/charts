@@ -2,32 +2,165 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2021-12-17 08:52:27
+ * @Last Modified time: 2021-12-29 15:52:13
  */
-let globalConfig = {
+/**
+ * 
+  leftBlockColorWidth: number,
+  左侧图例色块宽度  
+  leftBlockTextWidth: number,
+  左侧图例文本宽度  
+  rightBlockTextWidth: number,
+  右侧文本宽度  
+  totalWidth: number,
+  总宽度  
+  leftBarWidth:number,
+  色块左侧总宽度  
+  totalHeight: number,
+  总高度度  
+  maxLen: number,
+  中间色块需要渲染的矩形总个数  
+  rightTextGapNum: number,
+  右侧文本滚动显示个数  
+  rightTextGap: number,
+  右侧文本滚动间隔  
+  centerBlockWidth: number,
+  中间图表大小  
+  divHeight: number,
+  每一行数据的高度  
+  minMax: Array<number>,
+  y轴的范围  
+  leftBarShowTimes: number,
+  左侧显示数据，y轴相邻数的差  
+  rightTextStartX: number,
+  右侧文本开始坐标  
+  colorArr: Array<string>,
+  左侧显示的颜色梯度示例  
+ */
+interface IglobalConfig {
   // 左侧图例色块宽度
-  leftBlockColorWidth: 20,
+  leftBlockColorWidth: number,
   // 左侧图例文本宽度
-  leftBlockTextWidth: 30,
+  leftBlockTextWidth: number,
   // 右侧文本宽度
-  rightBlockTextWidth: 60,
+  rightBlockTextWidth: number,
   // 总宽度
-  totalWidth: 900,
+  totalWidth: number,
+  // 色块左侧总宽度
+  leftBarWidth:number,
   // 总高度度
-  totalHeight: 300,
+  totalHeight: number,
+  // 中间色块需要渲染的矩形总个数
+  maxLen: number,
   // 右侧文本滚动显示个数
-  rightTextGapNum: 5,
+  rightTextGapNum: number,
   // 右侧文本滚动间隔
-  rightTextGap: 70,
+  rightTextGap: number,
   // 中间图表大小
-  centerBlockWidth: 0,
+  centerBlockWidth: number,
   // 每一行数据的高度
-  divHeight: 1,
+  divHeight: number,
   // y轴的范围
-  minMax: [-20, 120],
+  minMax: Array<number>,
   // 左侧显示数据，y轴相邻数的差
-  leftBarShowTimes: 20,
+  leftBarShowTimes: number,
+  // 右侧文本开始坐标
+  rightTextStartX: number,
   // 左侧显示的颜色梯度示例
+  colorArr: Array<string>,
+}
+interface IselectArround {
+    max: number,
+    min: number,
+    color: string,
+}
+interface IsetPosi {
+  x:number,
+  y:number,
+}
+interface IsetText extends IsetPosi {
+  ctx:CanvasRenderingContext2D,
+  text?:string ,
+  textAlign?:"left"|"right"|"center"
+}
+interface IwaterFallTextInput extends IsetText{
+  step?:number,
+}
+// interface IInputDataArr {
+
+// }
+/**
+ * 输入的元数据，应为每个元素都为number的数组
+ */
+type IInputDataArr = Array<number>
+type IInputDataColorArr = Array<string>
+/**
+ * originColor，  
+ * 表示瀑布流的所有数据  
+ * 数组的每一项是 IInputDataArr  
+ */
+type IoriginData = Array<IInputDataArr>
+type IoriginColor = Array<IInputDataColorArr>
+let globalConfig:IglobalConfig = {
+  /**
+   * 左侧图例色块宽度
+   */
+  leftBlockColorWidth: 20,
+  /**
+   * 左侧图例文本宽度
+   */
+  leftBlockTextWidth: 30,
+  /**
+   * 右侧文本宽度
+   */
+  rightBlockTextWidth: 60,
+  /**
+   * 总宽度
+   */
+  totalWidth: 900,
+  /**
+   * 色块左侧总宽度
+   */
+  leftBarWidth:400,
+  /**
+   * 总高度度
+   */
+  totalHeight: 300,
+  /**
+   * 中间色块需要渲染的矩形总个数
+   */
+  maxLen: 100,
+  /**
+   * 右侧文本滚动显示个数
+   */
+  rightTextGapNum: 5,
+  /**
+   * 右侧文本滚动间隔
+   */
+  rightTextGap: 70,
+  /**
+   * 中间图表大小
+   */
+  centerBlockWidth: 0,
+  /**
+   * 每一行数据的高度
+   */
+  divHeight: 1,
+  /**
+   * y轴的范围
+   */
+  minMax: [-20, 120],
+  /**
+   * 右侧文本开始坐标
+   */
+  rightTextStartX: 800,
+  /**
+   * 左侧显示数据，y轴相邻数的差
+   */
+  leftBarShowTimes: 20,
+  /**
+   * 左侧显示的颜色梯度示例
+   */
   colorArr: [
     "#FF0000",
     "#FF3700",
@@ -46,9 +179,16 @@ let globalConfig = {
     "#0000FF",
   ],
 };
+
 // 文本自动根据step重新绘制在新位置的类
-class WaterFallText {
-  constructor({ x, y, ctx, step = 1, text = "", textAlign = "left" }) {
+class WaterFallText implements IwaterFallTextInput {
+  x;
+  y;
+  step;
+  ctx;
+  text;
+  textAlign;
+  constructor({ x, y, ctx, step = 1, text = "", textAlign = "left" }:IwaterFallTextInput) {
     this.x = x;
     this.y = y;
     this.step = step;
@@ -66,7 +206,7 @@ class WaterFallText {
     this.ctx.fillText(this.text, this.x, this.y);
     this.ctx.restore();
   }
-  update(x, y) {
+  update(x:number, y:number) {
     this.x = x;
     this.y = y;
     this.fillText();
@@ -75,7 +215,7 @@ class WaterFallText {
 // 工具类
 class Utils {
   // 从源数据中过滤出目标数量，尽量平均
-  filter({ target = 300, data = [] }) {
+  filter({ target = 300, data = [] }:{target:number,data:Array<number>}):Array<number> {
     let len = data.length;
     //小于等于target
     if (len <= target) return data;
@@ -85,7 +225,7 @@ class Utils {
      * 然后取每一个格子内的最后一个整数，作为下标去取源数据对应的像素颜色
      */
     let step = len / target;
-    let arr = [];
+    let arr:Array<number> = [];
     let num = step;
     for (let i = 0; i < target; i++) {
       arr.push(data[Math.floor(num) - 1]);
@@ -93,7 +233,7 @@ class Utils {
     }
     return arr;
   }
-  getDate() {
+  getDate():string {
     let datetime = new Date();
     let hh = datetime.getHours();
     let MF = datetime.getMinutes();
@@ -102,7 +242,7 @@ class Utils {
     let ss = SS < 10 ? "0" + SS : SS;
     return hh + ":" + mf + ":" + ss;
   }
-  setText({ textAlign = "left", ctx, text = "", x = 0, y = 0 }) {
+  setText({ textAlign = "left", ctx, text = "", x = 0, y = 0 }:IsetText) {
     ctx.save();
     ctx.textAlign = textAlign;
     ctx.fillText(text, x, y);
@@ -110,17 +250,10 @@ class Utils {
   }
   // 给定数组数值，输出对象的范围
   checkArround(
-    //
-    arr = [1, 2, 29],
-    arrColor = [
-      {
-        max: 10,
-        min: 0,
-        color: "rgb(0, 117, 128)",
-      },
-    ]
-  ) {
-    let res = [];
+    arr:Array<number>=[],
+    arrColor:Array<IselectArround>=[]
+  ):Array<string> {
+    let res:Array<string> = [];
     // 算法优化
     // O(mn)  =>
     arr.forEach((ele, index) => {
@@ -137,8 +270,8 @@ class Utils {
     return res;
   }
   // 设置幅度颜色，后续根据颜色生成幅度与每一层刻度
-  genDataLimit({ minMax = [-20, 120], colorArr = [] }) {
-    let finArr = [];
+  genDataLimit({ minMax = [-20, 120], colorArr = [] }:IglobalConfig):Array<IselectArround> {
+    let finArr:Array<IselectArround> = [];
     let min = minMax[0];
     let max = minMax[1];
     let arrLen = colorArr.length;
@@ -157,30 +290,34 @@ class Utils {
 }
 // Draw 主要逻辑与渲染
 class Draw extends Utils {
-  constructor(element, data) {
+  ctx:CanvasRenderingContext2D = new CanvasRenderingContext2D();
+  element:string;
+  globalConfig:IglobalConfig;
+  dataLimit:Array<IselectArround> = [];
+  // 中间区域所需显示的像素数量
+  pixelShow:number = 1;
+  // originData = [];
+  originColor:IoriginColor = [];
+  dateData:Array<WaterFallText|null> = [];
+  checkIsDateNum = 0;
+  checkIsDateNumLimit = 70;
+  constructor(element:string, data:object) {
     super();
     this.element = element;
     this.globalConfig = { ...globalConfig, ...data };
   }
-  ctx;
-  globalConfig;
-  dataLimit;
-  // 中间区域所需显示的像素数量
-  pixelShow;
-  originData = [];
-  originColor = [];
-  dateData = [];
-  checkIsDateNum = 0;
-  checkIsDateNumLimit = 70;
   /**
    * @name init
    * @description 初始化方法，获取挂载节点，初始化基础样式，更新globalConfig配置信息， 初始化不变的背景
    */
   init() {
+    // 不能为空且
+    if (!this.element || typeof this.element !== "string") return console.error("element must be string,and element !== '' !");
     // 创建2d区域
-    let element = document.getElementById(this.element);
-    this.ctx = element.getContext("2d");
+    let element:HTMLCanvasElement = document.getElementById(this.element) as HTMLCanvasElement;
+    this.ctx = element.getContext("2d") as CanvasRenderingContext2D;
     let ctx = this.ctx;
+    if (!ctx) return;
     // 是否需要乘以像素密度需要对应设备进行测试，暂保留此注释
     // this.globalConfig.centerBlockWidth * window.devicePixelRatio;
     // 初始化样式
@@ -201,7 +338,7 @@ class Draw extends Utils {
       rightBlockTextWidth;
     this.globalConfig = {
       ...this.globalConfig,
-      rightTextGap: parseInt(element.height / rightTextGapNum),
+      rightTextGap: parseInt((element.height / rightTextGapNum).toString()),
       // 总宽度
       totalWidth: element.width,
       // 总高度度
@@ -250,7 +387,7 @@ class Draw extends Utils {
         textAlign: "left",
         x: 10,
         y: childHeightText * i + 10,
-        text: minMax[1] - i * leftBarShowTimes,
+        text: (minMax[1] - i * leftBarShowTimes).toString(),
       });
     }
     this.setText({
@@ -258,7 +395,7 @@ class Draw extends Utils {
       textAlign: "left",
       x: 10,
       y: totalHeight - 4,
-      text: minMax[0],
+      text: (minMax[0]).toString(),
     });
     // 生成色块范围
     let len = colorArr.length;
@@ -362,7 +499,7 @@ class Draw extends Utils {
    * @returns {null || WaterFallText} 根据bool值决定返回空或者WaterFallText对象
    * @description 根据布尔值创建并返回WaterFallText.draw()调用
    */
-  setRightDateHtml(bool) {
+  setRightDateHtml(bool:boolean):WaterFallText|null {
     // console.log(bool);
     if (bool) {
       let date = this.getDate();
@@ -385,7 +522,7 @@ class Draw extends Utils {
    * @param {Array} data 最新数据，
    * @description 提交最新数据到内部存储空间，生成对应数据并且维护数据大小。执行完毕后调用 update() 方法更新数据
    */
-  commit(_data) {
+  commit(_data:IInputDataArr) {
     // 【优化】根据需要显示的像素数量筛选出目标数量的数据
     let data = this.filter({ target: this.pixelShow, data: _data });
     // console.log(_data.length);
@@ -393,10 +530,11 @@ class Draw extends Utils {
     // log 测试data数据 请删除
     // if (window.handleFlag) console.log(this.globalConfig, this.dateData);
     if (!Array.isArray(data)) console.error("commit function need Array!");
-    let len = this.originData.length;
+    let len = this.originColor.length;
+    // let len = this.originData.length;
     if (len >= this.globalConfig.maxLen + 20) {
       // 如果长度超了，删除数组最后元素
-      this.originData.pop();
+      // this.originData.pop();
       this.originColor.pop();
       this.dateData.pop();
     }
@@ -409,7 +547,7 @@ class Draw extends Utils {
     }
     let colorArr = this.checkArround(data, this.dataLimit);
     this.originColor.unshift(colorArr);
-    this.originData.unshift(colorArr);
+    // this.originData.unshift(colorArr);
     // checkIsDateNum 等于一个比 checkIsDateNumLimit小的数就可以了，这样checkIsDateNum在0到checkIsDateNumLimit循环的时候有一次对应上就赋值日期
     this.dateData.unshift(this.setRightDateHtml(!!!this.checkIsDateNum));
     this.update();
@@ -417,14 +555,17 @@ class Draw extends Utils {
   }
 }
 class WaterFall {
-  constructor(element) {
+  initData:number = 0;
+  initData1:number = 0;
+  isInit:boolean = false;
+  element:string=''
+  chart:Draw;
+  constructor(element:string) {
     if (!element) console.error("new WaterFall id('id');id is not defined!");
     this.element = element;
+    this.chart = new Draw(this.element, {});
+    // this.chart = this.chart.init();
   }
-  initData = 0;
-  initData1 = 0;
-  isInit = false;
-  chart;
   /**
    * @name init
    * @description 传入配置项，创建 Draw 类，并将所需参数设置进去
@@ -446,7 +587,7 @@ class WaterFall {
    * @name update
    * @description 传入每次需要更新的数据，会根据像素自动截取
    */
-  update(data) {
+  update(data:IInputDataArr) {
     if (!this.isInit)
       return console.error("WaterFall need WaterFall.init() in the first!");
     this.chart.commit(data);
