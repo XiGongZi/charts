@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2021-12-29 17:05:49
+ * @Last Modified time: 2021-12-30 10:26:17
  */
 /**
  * 
@@ -346,7 +346,8 @@ interface IDraw extends Ictx {
 }
 // Draw 主要逻辑与渲染
 class Draw extends Utils implements IDraw {
-    ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D();
+    // CanvasRenderingContext2D 是windows内置的native code，不可实例化， 只能 CanvasRenderingContext2D.prototype 去填充默认
+    ctx: CanvasRenderingContext2D = CanvasRenderingContext2D.prototype;
     element: string;
     globalConfig: IglobalConfig;
     dataLimit: IselectArroundArr = [];
