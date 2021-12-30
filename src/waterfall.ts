@@ -81,7 +81,7 @@ interface IselectArround {
 }
 /**
     用于给数组 @type IInputDataArr 每一项确定颜色  
-    每一项都有max mix color属性  
+    每一项都有max min color属性  
     以每一项的max和min为依据，范围内则使用对应的color  
  */
 type IselectArroundArr = Array<IselectArround>;
@@ -282,6 +282,7 @@ class Utils {
         // O(mn)  =>
         arr.forEach((ele, index) => {
             let flag = false;
+            // 查找元数据每个成员所在范围对应的颜色，若超出范围则置入默认颜色
             arrColor.forEach((item) => {
                 if (!flag) {
                     // 如果在范围内则push
@@ -319,8 +320,28 @@ class Utils {
         return finArr;
     }
 }
+interface IDraw {
+    ctx: CanvasRenderingContext2D;
+    element: string;
+    globalConfig: IglobalConfig;
+    dataLimit: IselectArroundArr;
+    // 中间区域所需显示的像素数量
+    pixelShow: number;
+    originColor: IoriginColor;
+    dateData: Array<WaterFallText | null>;
+    checkIsDateNum: number;
+    checkIsDateNumLimit: number;
+    init: () => void;
+    generateLeft: () => void;
+    resetLeft: () => void;
+    update: () => void;
+    renderCenterImg: () => void;
+    renderRightText: () => void;
+    setRightDateHtml: (bool: boolean) => WaterFallText | null;
+    commit: (_data: IInputDataArr) => void;
+}
 // Draw 主要逻辑与渲染
-class Draw extends Utils {
+class Draw extends Utils implements IDraw {
     ctx: CanvasRenderingContext2D = new CanvasRenderingContext2D();
     element: string;
     globalConfig: IglobalConfig;
@@ -331,6 +352,9 @@ class Draw extends Utils {
     originColor: IoriginColor = [];
     dateData: Array<WaterFallText | null> = [];
     checkIsDateNum = 0;
+    /**
+     * 右侧时间文本间隔多少个渲染一次(当前70)
+     */
     checkIsDateNumLimit = 70;
     constructor(element: string, data: object) {
         super();
@@ -544,7 +568,7 @@ class Draw extends Utils {
     }
     /**
      *
-     * @param {IInputDataArr} data 最新数据，
+     * @param {IInputDataArr} _data 最新数据，
      * @description 提交最新数据到内部存储空间，生成对应数据并且维护数据大小。执行完毕后调用 update() 方法更新数据
      */
     commit(_data: IInputDataArr) {
@@ -553,6 +577,7 @@ class Draw extends Utils {
         if (!Array.isArray(data)) console.error('commit function need Array!');
         const len = this.originColor.length;
         // let len = this.originData.length;
+        // 这里加20是为了让右侧时间文本下落到最后时能超出显示区域再移除
         if (len >= this.globalConfig.maxLen + 20) {
             // 如果长度超了，删除数组最后元素
             // this.originData.pop();
@@ -563,7 +588,9 @@ class Draw extends Utils {
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
             this.checkIsDateNum = 0;
         }
+        // 将元数据转换成目标色彩
         const colorArr = this.checkArround(data, this.dataLimit);
+        // 添加进渲染队列
         this.originColor.unshift(colorArr);
         // this.originData.unshift(data);
         // checkIsDateNum 等于一个比 checkIsDateNumLimit小的数就可以了，这样checkIsDateNum在0到checkIsDateNumLimit循环的时候有一次对应上就赋值日期
