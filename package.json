@@ -2,7 +2,7 @@
     "name": "rf-charts",
     "version": "0.0.1",
     "description": "",
-    "main": "lib/index.js",
+    "main": "public/index.js",
     "scripts": {
         "dev": "parcel ./example/waterfall.html",
         "build": "tsc",

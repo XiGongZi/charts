@@ -3,3 +3,4 @@
 *.js
 .parcel-cache
 /dist/
+/public/
