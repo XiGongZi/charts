@@ -80,6 +80,12 @@ interface IselectArround {
     color: string;
 }
 /**
+ * canvas object
+ */
+interface Ictx {
+    ctx: CanvasRenderingContext2D;
+}
+/**
     用于给数组 @type IInputDataArr 每一项确定颜色  
     每一项都有max min color属性  
     以每一项的max和min为依据，范围内则使用对应的color  
@@ -95,8 +101,7 @@ interface IsetPosi {
 /**
  * ctx.fillText 需要用到的参数
  */
-interface IsetText extends IsetPosi {
-    ctx: CanvasRenderingContext2D;
+interface IsetText extends IsetPosi, Ictx {
     text?: string;
     textAlign?: 'left' | 'right' | 'center';
 }
@@ -320,8 +325,7 @@ class Utils {
         return finArr;
     }
 }
-interface IDraw {
-    ctx: CanvasRenderingContext2D;
+interface IDraw extends Ictx {
     element: string;
     globalConfig: IglobalConfig;
     dataLimit: IselectArroundArr;
