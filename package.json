@@ -4,7 +4,7 @@
     "description": "",
     "main": "lib/index.js",
     "scripts": {
-        "dev": "nodemon src/index.ts ",
+        "dev": "parcel ./example/waterfall.html",
         "build": "tsc src/index.ts ",
         "lint": "eslint --ext .ts ./src"
     },
@@ -21,13 +21,14 @@
     "author": "gongzixi",
     "license": "ISC",
     "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.8.1",
+        "@typescript-eslint/parser": "^5.8.1",
         "babel-cli": "^6.26.0",
         "babel-core": "^6.26.3",
         "babel-preset-es2015": "^6.24.1",
-        "@typescript-eslint/eslint-plugin": "^5.8.1",
-        "@typescript-eslint/parser": "^5.8.1",
         "eslint": "^8.5.0",
         "eslint-config-alloy": "^4.4.0",
+        "parcel": "^2.0.0-rc.0",
         "prettier": "^2.5.1",
         "typescript": "^4.5.4"
     }
