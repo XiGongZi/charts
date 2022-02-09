@@ -10,8 +10,10 @@
 </head>
 
 <body>
-    <canvas style="background: #f2f2f2" id="canvas" width="900" height="300"></canvas>
-    <br/>
+    <div style="width:100%;height:100%">
+        <canvas style="background: #f2f2f2" id="canvas" width="900" height="300"></canvas>
+    </div>
+    <br />
     <button onclick="start()">start</button>
     <button onclick="over()">over</button>
 </body>
@@ -25,33 +27,40 @@
     // setInterval(() => {
     //     flow.update([100, 60, 40, 20, 40, 50, 100, 40, 30]);
     // }, 50);
+
+    // 创建canvas画布 并初始化 waterFall 对象
+    const flow = new WaterFall('canvas');
+    const flowOptions = {
+        // ...配置项，可不填
+        minMax: [-120, -60],
+        leftBlockTextWidth: 120,
+        leftBarShowTimes: 10,
+    };
+    // 创建完毕后调用init方法初始化
+    flow.init(flowOptions);
+    // socket链接
     let ws;
     // 开始
-    window.start = function() {
+    window.start = function () {
+        console.log('start');
+        over()
         getDataBySokcet();
     }
     // 结束
     window.over = function () {
-        ws.close();
+        console.log('over', !!ws);
+        if (ws) {
+            ws.close();
+            ws = null;
+        }
     }
     // websocket get data
     function getDataBySokcet() {
 
         ws = new WebSocket("ws://192.168.0.173:3000/ws"); //公网
-        console.log("ws", ws);
         let obj = {};
         obj = {};
 
-        // 传入canvas的元素ID
-        const flow = new WaterFall('canvas');
-        const flowOptions = {
-            // ...配置项，可不填
-            minMax: [-120, -60],
-            leftBlockTextWidth: 120,
-            leftBarShowTimes: 10,
-        };
-        // 初始化
-        flow.init(flowOptions);
         ws.onopen = () => {
             console.log("纳特实时调用websocket连接已打开...");
             let cmd = JSON.stringify(obj);
