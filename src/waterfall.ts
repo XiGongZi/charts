@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2022-02-09 10:21:53
+ * @Last Modified time: 2022-02-09 10:46:46
  */
 /**
  * 
@@ -397,6 +397,7 @@ class Draw extends Utils implements IDraw {
         const {
             leftBlockColorWidth,
             leftBlockTextWidth,
+            leftBlockTitleWidth,
             rightBlockTextWidth,
             textColor,
             divHeight,
@@ -404,7 +405,7 @@ class Draw extends Utils implements IDraw {
         } = this.globalConfig;
         // 计算中间主要渲染区域的宽度
         const centerBlockWidth =
-            element.width - leftBlockColorWidth - leftBlockTextWidth - rightBlockTextWidth;
+            element.width - leftBlockColorWidth - leftBlockTextWidth - leftBlockTitleWidth - rightBlockTextWidth;
         this.globalConfig = {
             ...this.globalConfig,
             rightTextGap: parseInt((element.height / rightTextGapNum).toString(), 10),
@@ -415,7 +416,7 @@ class Draw extends Utils implements IDraw {
             // 中间渲染色块的宽度
             centerBlockWidth,
             // 色块左侧总宽度
-            leftBarWidth: leftBlockColorWidth + leftBlockTextWidth,
+            leftBarWidth: leftBlockColorWidth + leftBlockTextWidth + leftBlockTitleWidth,
             // 中间色块需要渲染的矩形总个数
             maxLen: element.height / divHeight,
             // 右侧文本开始坐标
@@ -452,22 +453,24 @@ class Draw extends Utils implements IDraw {
             totalHeight
         } = this.globalConfig;
         const ctx = this.ctx;
-        // 生成左侧图例
+        // 生成title
+        
+        // 生成左侧图例文本
         const times = (minMax[1] - minMax[0]) / leftBarShowTimes;
         const childHeightText = totalHeight / times;
         for (let i = 0; i < times; i++) {
             this.setText({
                 ctx,
-                textAlign: 'left',
-                x: 10,
+                textAlign: 'center',
+                x: 10+this.globalConfig.leftBlockTitleWidth,
                 y: childHeightText * i + 10,
                 text: (minMax[1] - i * leftBarShowTimes).toString()
             });
         }
         this.setText({
             ctx,
-            textAlign: 'left',
-            x: 10,
+            textAlign: 'center',
+            x: 10+this.globalConfig.leftBlockTitleWidth,
             y: totalHeight - 4,
             text: minMax[0].toString()
         });
@@ -478,7 +481,7 @@ class Draw extends Utils implements IDraw {
             ctx.save();
             ctx.fillStyle = ele;
             ctx.fillRect(
-                this.globalConfig.leftBlockTextWidth,
+                this.globalConfig.leftBlockTextWidth+this.globalConfig.leftBlockTitleWidth,
                 index * childHeight,
                 this.globalConfig.leftBlockColorWidth,
                 childHeight
