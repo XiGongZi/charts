@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2021-12-30 10:26:17
+ * @Last Modified time: 2022-02-09 10:21:53
  */
 /**
  * 
@@ -39,6 +39,10 @@
     左侧显示的颜色梯度示例  
  */
 interface IglobalConfig {
+    // 左侧标题宽度
+    leftBlockTitleWidth: number;
+    // 文字颜色
+    textColor: string;
     // 左侧图例色块宽度
     leftBlockColorWidth: number;
     // 左侧图例文本宽度
@@ -134,6 +138,14 @@ const globalConfig: IglobalConfig = {
      * 左侧图例色块宽度
      */
     leftBlockColorWidth: 20,
+    /**
+     * 文字颜色
+    */
+    textColor: '#000',
+    /**
+     * 左侧标题宽度
+    */
+    leftBlockTitleWidth: 100,
     /**
      * 左侧图例文本宽度
      */
@@ -381,15 +393,12 @@ class Draw extends Utils implements IDraw {
         this.ctx = element.getContext('2d') as CanvasRenderingContext2D;
         const ctx = this.ctx;
         if (!ctx) return;
-        // 是否需要乘以像素密度需要对应设备进行测试，暂保留此注释
-        // this.globalConfig.centerBlockWidth * window.devicePixelRatio;
-        // 初始化样式
-        ctx.font = '12px serif';
         // 重置globalConfig
         const {
             leftBlockColorWidth,
             leftBlockTextWidth,
             rightBlockTextWidth,
+            textColor,
             divHeight,
             rightTextGapNum
         } = this.globalConfig;
@@ -422,6 +431,11 @@ class Draw extends Utils implements IDraw {
         // 获取应显示的像素数量
         // console.log(this.globalConfig.centerBlockWidth);
         this.pixelShow = this.globalConfig.centerBlockWidth;
+        // 是否需要乘以像素密度需要对应设备进行测试，暂保留此注释
+        // this.globalConfig.centerBlockWidth * window.devicePixelRatio;
+        // 初始化样式
+        ctx.font = '12px serif';
+        ctx.fillStyle = textColor;
         // 设置背景板
         this.resetLeft();
     }
