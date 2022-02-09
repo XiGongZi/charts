@@ -24,9 +24,13 @@ flow.update(array);
 | ------------------- | -------------- | -------------------------------- |
 | colorArr            | array          | 左侧显示的颜色梯度示例的颜色数组 |
 | leftBlockColorWidth | int            | 左侧图例色块宽度 默认 20px       |
+| leftBlockTitleWidth | int            | 左侧图例标题宽度 默认 20px       |
 | leftBlockTextWidth  | int            | 左侧图例文本宽度 默认 30px       |
+| rightBlockEndWidth  | int            | 右侧末端宽度 默认 20px           |
 | rightBlockTextWidth | int            | 右侧文本宽度 默认 60px           |
 | rightTextGapNum     | int            | 右侧文本滚动显示个数 默认 5px    |
 | divHeight           | int            | 每一行数据的高度 默认 1px        |
 | minMax              | array[int,int] | y 轴的范围 默认[-20,120]         |
 | leftBarShowTimes    | int            | y 轴相邻显示数的差 默认 20       |
+| textColor           | string         | 默认颜色 默认#000                |
+ 

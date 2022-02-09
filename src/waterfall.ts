@@ -2,41 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2022-02-09 10:46:46
- */
-/**
- * 
-    interface 全局配置项  
-    leftBlockColorWidth: number,
-    左侧图例色块宽度  
-    leftBlockTextWidth: number,
-    左侧图例文本宽度  
-    rightBlockTextWidth: number,
-    右侧文本宽度  
-    totalWidth: number,
-    总宽度  
-    leftBarWidth:number,
-    色块左侧总宽度  
-    totalHeight: number,
-    总高度度  
-    maxLen: number,
-    中间色块需要渲染的矩形总个数  
-    rightTextGapNum: number,
-    右侧文本滚动显示个数  
-    rightTextGap: number,
-    右侧文本滚动间隔  
-    centerBlockWidth: number,
-    中间图表大小  
-    divHeight: number,
-    每一行数据的高度  
-    minMax: Array<number>,
-    y轴的范围  
-    leftBarShowTimes: number,
-    左侧显示数据，y轴相邻数的差  
-    rightTextStartX: number,
-    右侧文本开始坐标  
-    colorArr: Array<string>,
-    左侧显示的颜色梯度示例  
+ * @Last Modified time: 2022-02-09 11:03:00
  */
 interface IglobalConfig {
     // 左侧标题宽度
@@ -57,6 +23,8 @@ interface IglobalConfig {
     totalHeight: number;
     // 中间色块需要渲染的矩形总个数
     maxLen: number;
+    // 右侧结束块宽度
+    rightBlockEndWidth: number;
     // 右侧文本滚动显示个数
     rightTextGapNum: number;
     // 右侧文本滚动间隔
@@ -170,6 +138,10 @@ const globalConfig: IglobalConfig = {
      * 中间色块需要渲染的矩形总个数
      */
     maxLen: 100,
+    /**
+     * 右侧结束块宽度
+    */
+    rightBlockEndWidth: 20,
     /**
      * 右侧文本滚动显示个数
      */
@@ -297,7 +269,7 @@ class Utils {
         const res: IInputDataColorArr = [];
         // 算法优化
         // O(mn)  =>
-        arr.forEach((ele, index) => {
+        arr.forEach((ele) => {
             let flag = false;
             // 查找元数据每个成员所在范围对应的颜色，若超出范围则置入默认颜色
             arrColor.forEach((item) => {
@@ -398,6 +370,7 @@ class Draw extends Utils implements IDraw {
             leftBlockColorWidth,
             leftBlockTextWidth,
             leftBlockTitleWidth,
+            rightBlockEndWidth,
             rightBlockTextWidth,
             textColor,
             divHeight,
@@ -405,7 +378,7 @@ class Draw extends Utils implements IDraw {
         } = this.globalConfig;
         // 计算中间主要渲染区域的宽度
         const centerBlockWidth =
-            element.width - leftBlockColorWidth - leftBlockTextWidth - leftBlockTitleWidth - rightBlockTextWidth;
+            element.width - leftBlockColorWidth - leftBlockTextWidth - leftBlockTitleWidth - rightBlockTextWidth-rightBlockEndWidth;
         this.globalConfig = {
             ...this.globalConfig,
             rightTextGap: parseInt((element.height / rightTextGapNum).toString(), 10),
@@ -420,7 +393,7 @@ class Draw extends Utils implements IDraw {
             // 中间色块需要渲染的矩形总个数
             maxLen: element.height / divHeight,
             // 右侧文本开始坐标
-            rightTextStartX: element.width - rightBlockTextWidth
+            rightTextStartX: element.width - rightBlockTextWidth - rightBlockEndWidth
         };
         // 设置右侧文本间隔
         this.checkIsDateNumLimit = this.globalConfig.rightTextGap;
