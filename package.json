@@ -5,7 +5,7 @@
     "main": "public/index.js",
     "scripts": {
         "dev": "parcel ./example/waterfall.html",
-        "build": "tsc",
+        "build": "rimraf ./public && tsc",
         "lint": "eslint --ext .ts ./src"
     },
     "babel": {
@@ -30,6 +30,7 @@
         "eslint-config-alloy": "^4.4.0",
         "parcel": "^2.0.0-rc.0",
         "prettier": "^2.5.1",
+        "rimraf": "^3.0.2",
         "typescript": "^4.5.4"
     }
 }
