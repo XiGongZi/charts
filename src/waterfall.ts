@@ -4,6 +4,7 @@
  * @Last Modified by: WangAnCheng 1079688386@qq.com
  * @Last Modified time: 2022-02-09 11:03:00
  */
+import {ObjectPool} from "./utils";
 interface IglobalConfig {
     // 左侧标题宽度
     leftBlockTitleWidth: number;
@@ -67,20 +68,20 @@ type IselectArroundArr = Array<IselectArround>;
     xy坐标
  */
 interface IsetPosi {
-    x: number;
-    y: number;
+    x?: number;
+    y?: number;
 }
 /**
  * ctx.fillText 需要用到的参数
  */
-interface IsetText extends IsetPosi, Ictx {
+interface IsetText extends IsetPosi {
     text?: string;
-    textAlign?: 'left' | 'right' | 'center';
+    textAlign?: CanvasTextAlign;
 }
 /**
  * waterFallTextInput 类需要传入的基本值
  */
-interface IwaterFallTextInput extends IsetText {
+interface IwaterFallTextInput extends IsetText, Ictx {
     step?: number;
 }
 /**
@@ -198,19 +199,21 @@ const globalConfig: IglobalConfig = {
     在使用draw方法后更新坐标  
  */
 class WaterFallText implements IwaterFallTextInput {
-    x;
-    y;
+    x:number=0;
+    y:number=0;
     step;
-    ctx;
-    text;
+    ctx: CanvasRenderingContext2D = CanvasRenderingContext2D.prototype;
+    text="";
     textAlign;
-    constructor({ x, y, ctx, step = 1, text = '', textAlign = 'left' }: IwaterFallTextInput) {
-        this.x = x;
-        this.y = y;
+    constructor({ ctx, step = 1, textAlign="left" }: IwaterFallTextInput) {
         this.step = step;
         this.ctx = ctx;
-        this.text = text;
         this.textAlign = textAlign;
+    }
+    set({ x=0, y=0, text = 'left' }: IsetText) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
     }
     draw() {
         this.y = this.y + this.step;
@@ -258,7 +261,7 @@ class Utils {
         const ss = SS < 10 ? '0' + SS : SS;
         return hh + ':' + mf + ':' + ss;
     }
-    setText({ textAlign = 'left', ctx, text = '', x = 0, y = 0 }: IsetText) {
+    setText({ textAlign = 'left', ctx, text = '', x = 0, y = 0 }: IwaterFallTextInput) {
         ctx.save();
         ctx.textAlign = textAlign;
         ctx.fillText(text, x, y);
@@ -550,13 +553,17 @@ class Draw extends Utils implements IDraw {
         // console.log(bool);
         if (bool) {
             const date = this.getDate();
-            return new WaterFallText({
-                x: this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth + 4,
-                y: 0,
+            const app = new WaterFallText({
                 step: this.globalConfig.divHeight,
                 ctx: this.ctx,
-                text: date
             });
+            app.set({
+                x: this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth + 4,
+                // ctx: this.ctx,
+                y: 0,
+                text: date
+            })
+            return app;
         } else {
             return null;
         }
