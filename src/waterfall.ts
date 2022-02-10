@@ -602,8 +602,8 @@ class Draw extends Utils implements IDraw {
     }
 }
 interface IWaterFall {
-    initData: number;
-    initData1: number;
+    // initData: number;
+    // initData1: number;
     isInit: boolean;
     element: string;
     chart: Draw;
@@ -612,8 +612,8 @@ interface IWaterFall {
     update: (data: IInputDataArr) => void;
 }
 class WaterFall implements IWaterFall {
-    initData = 0;
-    initData1 = 0;
+    // initData = 0;
+    // initData1 = 0;
     isInit = false;
     element = '';
     chart;
