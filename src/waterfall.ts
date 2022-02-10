@@ -4,7 +4,7 @@
  * @Last Modified by: WangAnCheng 1079688386@qq.com
  * @Last Modified time: 2022-02-09 11:03:00
  */
-import {ObjectPool} from "./utils";
+import { ObjectPool } from "./utils";
 interface IglobalConfig {
     // 左侧标题宽度
     leftBlockTitleWidth: number;
@@ -199,18 +199,18 @@ const globalConfig: IglobalConfig = {
     在使用draw方法后更新坐标  
  */
 class WaterFallText implements IwaterFallTextInput {
-    x:number=0;
-    y:number=0;
+    x: number = 0;
+    y: number = 0;
     step;
     ctx: CanvasRenderingContext2D = CanvasRenderingContext2D.prototype;
-    text="";
+    text = "";
     textAlign;
-    constructor({ ctx, step = 1, textAlign="left" }: IwaterFallTextInput) {
+    constructor({ ctx, step = 1, textAlign = "left" }: IwaterFallTextInput) {
         this.step = step;
         this.ctx = ctx;
         this.textAlign = textAlign;
     }
-    set({ x=0, y=0, text = 'left' }: IsetText) {
+    set({ x = 0, y = 0, text = 'left' }: IsetText) {
         this.x = x;
         this.y = y;
         this.text = text;
@@ -323,12 +323,12 @@ interface IDraw extends Ictx {
     checkIsDateNum: number;
     checkIsDateNumLimit: number;
     init: () => void;
-    generateLeft: () => void;
-    resetLeft: () => void;
-    update: () => void;
-    renderCenterImg: () => void;
-    renderRightText: () => void;
-    setRightDateHtml: (bool: boolean) => WaterFallText | null;
+    // generateLeft: () => void;
+    // resetLeft: () => void;
+    // update: () => void;
+    // renderCenterImg: () => void;
+    // renderRightText: () => void;
+    // setRightDateHtml: (bool: boolean) => WaterFallText | null;
     commit: (_data: IInputDataArr) => void;
 }
 // Draw 主要逻辑与渲染
@@ -381,7 +381,7 @@ class Draw extends Utils implements IDraw {
         } = this.globalConfig;
         // 计算中间主要渲染区域的宽度
         const centerBlockWidth =
-            element.width - leftBlockColorWidth - leftBlockTextWidth - leftBlockTitleWidth - rightBlockTextWidth-rightBlockEndWidth;
+            element.width - leftBlockColorWidth - leftBlockTextWidth - leftBlockTitleWidth - rightBlockTextWidth - rightBlockEndWidth;
         this.globalConfig = {
             ...this.globalConfig,
             rightTextGap: parseInt((element.height / rightTextGapNum).toString(), 10),
@@ -396,7 +396,7 @@ class Draw extends Utils implements IDraw {
             // 中间色块需要渲染的矩形总个数
             maxLen: element.height / divHeight,
             // 右侧文本开始坐标
-            rightTextStartX: element.width - rightBlockTextWidth - rightBlockEndWidth
+            rightTextStartX: element.width - rightBlockTextWidth
         };
         // 设置右侧文本间隔
         this.checkIsDateNumLimit = this.globalConfig.rightTextGap;
@@ -417,157 +417,6 @@ class Draw extends Utils implements IDraw {
         this.resetLeft();
     }
 
-    /**
-     * @name generateLeft
-     * @description 生成左边的阶梯图与文本
-     */
-    generateLeft() {
-        const {
-            minMax = [-20, 120],
-            colorArr = [],
-            leftBarShowTimes,
-            totalHeight
-        } = this.globalConfig;
-        const ctx = this.ctx;
-        // 生成title
-        
-        // 生成左侧图例文本
-        const times = (minMax[1] - minMax[0]) / leftBarShowTimes;
-        const childHeightText = totalHeight / times;
-        for (let i = 0; i < times; i++) {
-            this.setText({
-                ctx,
-                textAlign: 'center',
-                x: 10+this.globalConfig.leftBlockTitleWidth,
-                y: childHeightText * i + 10,
-                text: (minMax[1] - i * leftBarShowTimes).toString()
-            });
-        }
-        this.setText({
-            ctx,
-            textAlign: 'center',
-            x: 10+this.globalConfig.leftBlockTitleWidth,
-            y: totalHeight - 4,
-            text: minMax[0].toString()
-        });
-        // 生成色块范围
-        const len = colorArr.length;
-        const childHeight = totalHeight / len;
-        colorArr.forEach((ele, index) => {
-            ctx.save();
-            ctx.fillStyle = ele;
-            ctx.fillRect(
-                this.globalConfig.leftBlockTextWidth+this.globalConfig.leftBlockTitleWidth,
-                index * childHeight,
-                this.globalConfig.leftBlockColorWidth,
-                childHeight
-            );
-            ctx.restore();
-        });
-    }
-
-    /**
-     * @name resetLeft
-     * @description 重置左侧示例，先清除再绘制
-     */
-    resetLeft() {
-        this.ctx.clearRect(0, 0, this.globalConfig.leftBarWidth, this.globalConfig.totalHeight);
-        this.generateLeft();
-    }
-
-    /**
-     * @name update
-     * @description 调用 renderCenterImg() 和 renderRightText()
-     */
-    update() {
-        // 渲染中间图像
-        this.renderCenterImg();
-        // 渲染右边文字
-        this.renderRightText();
-    }
-
-    /**
-     * @name renderCenterImg
-     * @description 渲染中间区域内容
-     */
-    renderCenterImg() {
-        // update
-        const ctx = this.ctx;
-        // console.log(this.globalConfig);
-        // console.log(this.originColor);
-        this.ctx.clearRect(
-            this.globalConfig.leftBarWidth,
-            0,
-            this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth,
-            this.globalConfig.totalHeight
-        );
-        const x = this.globalConfig.leftBarWidth;
-        const xEnd = this.globalConfig.rightTextStartX;
-        this.originColor.forEach((ele, index) => {
-            ctx.save();
-            // ctx.fillRect(50, index * 2, this.globalConfig.centerBlockWidth, 2);
-            const y = index * this.globalConfig.divHeight;
-            // 右侧文本开始x坐标即中间画布的结束x坐标
-            const lineargradient = ctx.createLinearGradient(x, y, xEnd, y);
-            const len = ele.length;
-            const times = 1 / len;
-            ele.forEach((ele1, index1) => {
-                lineargradient.addColorStop(index1 * times, ele1);
-            });
-            ctx.fillStyle = lineargradient;
-            ctx.fillRect(
-                this.globalConfig.leftBarWidth,
-                y,
-                this.globalConfig.centerBlockWidth,
-                this.globalConfig.divHeight
-            );
-            ctx.restore();
-        });
-    }
-    /**
-     * @name renderRightText
-     * @description 渲染右侧时间文本，清除右侧空间后，遍历dateData方法并调用draw绘制
-     */
-    renderRightText() {
-        // clear rect
-        this.ctx.clearRect(
-            this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth,
-            0,
-            this.globalConfig.rightBlockTextWidth,
-            this.globalConfig.totalHeight
-        );
-        // redraw text
-        this.dateData.forEach((ele) => {
-            if (ele) {
-                ele.draw();
-            }
-        });
-    }
-    /**
-     * @name setRightDateHtml
-     * @param {bool} bool 布尔值，是否创建 WaterFallText对象去渲染
-     * @returns {null || WaterFallText} 根据bool值决定返回空或者WaterFallText对象
-     * @description 根据布尔值创建并返回WaterFallText.draw()调用
-     */
-    setRightDateHtml(bool: boolean): WaterFallText | null {
-        // console.log(bool);
-        if (bool) {
-            const date = this.getDate();
-            const app = new WaterFallText({
-                step: this.globalConfig.divHeight,
-                ctx: this.ctx,
-            });
-            app.set({
-                x: this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth + 4,
-                // ctx: this.ctx,
-                y: 0,
-                text: date
-            })
-            return app;
-        } else {
-            return null;
-        }
-    }
     /**
      *
      * @param {IInputDataArr} _data 最新数据，
@@ -600,6 +449,159 @@ class Draw extends Utils implements IDraw {
         this.update();
         this.checkIsDateNum++;
     }
+    /**
+     * @name generateLeft
+     * @description 生成左边的阶梯图与文本
+     */
+    private generateLeft() {
+        const {
+            minMax = [-20, 120],
+            colorArr = [],
+            leftBarShowTimes,
+            totalHeight
+        } = this.globalConfig;
+        const ctx = this.ctx;
+        // 生成title
+
+        // 生成左侧图例文本
+        const times = (minMax[1] - minMax[0]) / leftBarShowTimes;
+        const childHeightText = totalHeight / times;
+        for (let i = 0; i < times; i++) {
+            this.setText({
+                ctx,
+                textAlign: 'center',
+                x: 10 + this.globalConfig.leftBlockTitleWidth,
+                y: childHeightText * i + 10,
+                text: (minMax[1] - i * leftBarShowTimes).toString()
+            });
+        }
+        this.setText({
+            ctx,
+            textAlign: 'center',
+            x: 10 + this.globalConfig.leftBlockTitleWidth,
+            y: totalHeight - 4,
+            text: minMax[0].toString()
+        });
+        // 生成色块范围
+        const len = colorArr.length;
+        const childHeight = totalHeight / len;
+        colorArr.forEach((ele, index) => {
+            ctx.save();
+            ctx.fillStyle = ele;
+            ctx.fillRect(
+                this.globalConfig.leftBlockTextWidth + this.globalConfig.leftBlockTitleWidth,
+                index * childHeight,
+                this.globalConfig.leftBlockColorWidth,
+                childHeight
+            );
+            ctx.restore();
+        });
+    }
+
+    /**
+     * @name resetLeft
+     * @description 重置左侧示例，先清除再绘制
+     */
+    private resetLeft() {
+        this.ctx.clearRect(0, 0, this.globalConfig.leftBarWidth, this.globalConfig.totalHeight);
+        this.generateLeft();
+    }
+
+    /**
+     * @name update
+     * @description 调用 renderCenterImg() 和 renderRightText()
+     */
+    private update() {
+        // 渲染中间图像
+        this.renderCenterImg();
+        // 渲染右边文字
+        this.renderRightText();
+    }
+
+    /**
+     * @name renderCenterImg
+     * @description 渲染中间区域内容
+     */
+    private renderCenterImg() {
+        // update
+        const ctx = this.ctx;
+        // console.log(this.globalConfig);
+        // console.log(this.originColor);
+        const { leftBarWidth, rightTextStartX, totalHeight } = this.globalConfig;
+        // 清除中间区域大小
+        this.ctx.clearRect(
+            leftBarWidth,
+            0,
+            rightTextStartX,
+            totalHeight
+        );
+        const x = leftBarWidth;
+        const xEnd = rightTextStartX;
+        this.originColor.forEach((ele, index) => {
+            ctx.save();
+            // ctx.fillRect(50, index * 2, this.globalConfig.centerBlockWidth, 2);
+            const y = index * this.globalConfig.divHeight;
+            // 右侧文本开始x坐标即中间画布的结束x坐标
+            const lineargradient = ctx.createLinearGradient(x, y, xEnd, y);
+            const len = ele.length;
+            const times = 1 / len;
+            ele.forEach((ele1, index1) => {
+                lineargradient.addColorStop(index1 * times, ele1);
+            });
+            ctx.fillStyle = lineargradient;
+            ctx.fillRect(
+                this.globalConfig.leftBarWidth,
+                y,
+                this.globalConfig.centerBlockWidth,
+                this.globalConfig.divHeight
+            );
+            ctx.restore();
+        });
+    }
+    /**
+     * @name renderRightText
+     * @description 渲染右侧时间文本，清除右侧空间后，遍历dateData方法并调用draw绘制
+     */
+    private renderRightText() {
+        // clear rect
+        this.ctx.clearRect(
+            this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth,
+            0,
+            this.globalConfig.rightBlockTextWidth,
+            this.globalConfig.totalHeight
+        );
+        // redraw text
+        this.dateData.forEach((ele) => {
+            if (ele) {
+                ele.draw();
+            }
+        });
+    }
+    /**
+     * @name setRightDateHtml
+     * @param {bool} bool 布尔值，是否创建 WaterFallText对象去渲染
+     * @returns {null || WaterFallText} 根据bool值决定返回空或者WaterFallText对象
+     * @description 根据布尔值创建并返回WaterFallText.draw()调用
+     */
+    private setRightDateHtml(bool: boolean): WaterFallText | null {
+        // console.log(bool);
+        if (bool) {
+            const date = this.getDate();
+            const app = new WaterFallText({
+                step: this.globalConfig.divHeight,
+                ctx: this.ctx,
+            });
+            app.set({
+                x: this.globalConfig.leftBarWidth + this.globalConfig.centerBlockWidth + 4,
+                // ctx: this.ctx,
+                y: 0,
+                text: date
+            })
+            return app;
+        } else {
+            return null;
+        }
+    }
 }
 interface IWaterFall {
     // initData: number;
@@ -616,11 +618,10 @@ class WaterFall implements IWaterFall {
     // initData1 = 0;
     isInit = false;
     element = '';
-    chart;
+    chart: Draw = Draw.constructor();
     constructor(element: string) {
         if (!element) console.error("new WaterFall id('id');id is not defined!");
         this.element = element;
-        this.chart = new Draw(this.element, {});
     }
     /**
      * @name init
