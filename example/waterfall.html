@@ -16,6 +16,9 @@
     <br />
     <button onclick="start()">start</button>
     <button onclick="over()">over</button>
+    <!-- <button onclick="debugs()">debugs</button> -->
+
+    
 </body>
 <script type="module">
     import WaterFall from '../src/waterfall.ts';
@@ -40,9 +43,34 @@
         rightBlockEndWidth:120,
         // textColor: '#ff0000',
         leftBarShowTimes: 10,
+        // divHeight:10
     };
     // 创建完毕后调用init方法初始化
     flow.init(flowOptions);
+    
+    window.debugs = function() {
+        // 更新数据 传入每一行应显示的数据数组,如 [2,3,1,4,5]
+        const needCon=[
+            // blue
+        [ -117,-117],
+        [ -110,-110],
+        [ -90,-90],
+        [ -88,-88],
+        [ -75,-75],
+        // red
+        [ -61,-61],
+        ]
+        // needCon.forEach(item=>{
+        //     flow.update(item);
+        // })
+        let num = 0;
+        let time = setInterval(() => {
+            if (num>=needCon.length) return clearInterval(time);
+            flow.update(needCon[num]);
+            num++;
+        }, 100);
+    }
+    // debugs()
     // socket链接
     let ws;
     // 开始

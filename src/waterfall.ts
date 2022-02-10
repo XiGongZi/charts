@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2022-02-09 11:03:00
+ * @Last Modified time: 2022-02-10 13:42:49
  */
 // import { ObjectPool } from "./utils";
 interface IglobalConfig {
@@ -342,6 +342,7 @@ class Draw extends Utils implements IDraw {
     pixelShow = 1;
     // 用以存储渐变色lineargradient对象，避免重复创建
     originLineargradient: CanvasGradient[] = [];
+    // 用以存储每一行颜色的色彩
     originColor: IoriginColor = [];
     dateData: Array<WaterFallText | null> = [];
     checkIsDateNum = 0;
@@ -443,6 +444,7 @@ class Draw extends Utils implements IDraw {
         }
         // 将元数据转换成目标色彩
         const colorArr = this.checkArround(data, this.dataLimit);
+        // this.createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
         // 添加进渲染队列
         this.originColor.unshift(colorArr);
         // this.originData.unshift(data);
@@ -450,6 +452,17 @@ class Draw extends Utils implements IDraw {
         this.dateData.unshift(this.setRightDateHtml(!this.checkIsDateNum));
         this.update();
         this.checkIsDateNum++;
+    }
+    // 创建 linergradient对象
+    private createLinearGradient(x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D, ele: string[]) {
+        const lineargradient = ctx.createLinearGradient(x, y, w, h);
+        const len = ele.length;
+        const times = 1 / len;
+        // 这一块是否可以存储起来避免每次都计算一遍？
+        ele.forEach((ele1, index1) => {
+            lineargradient.addColorStop(index1 * times, ele1);
+        });
+        return lineargradient;
     }
     /**
      * @name generateLeft
@@ -550,17 +563,7 @@ class Draw extends Utils implements IDraw {
          * 
          */
         //  this.originLineargradient
-        // 创建 linergradient对象
-        function createLinearGradient(x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D, ele: string[]) {
-            const lineargradient = ctx.createLinearGradient(x, y, w, h);
-            const len = ele.length;
-            const times = 1 / len;
-            // 这一块是否可以存储起来避免每次都计算一遍？
-            ele.forEach((ele1, index1) => {
-                lineargradient.addColorStop(index1 * times, ele1);
-            });
-            return lineargradient;
-        }
+
         this.originColor.forEach((ele, index) => {
 
             ctx.save();
@@ -568,12 +571,13 @@ class Draw extends Utils implements IDraw {
             // 右侧文本开始x坐标即中间画布的结束x坐标
             let lineargradient: CanvasGradient;
             // 将 lineargradient 存储起来避免每次都计算一遍
-            if (index && this.originLineargradient[index - 1]) {
-                lineargradient = this.originLineargradient[index - 1];
+            if (index && this.originLineargradient[index]) {
+                lineargradient = this.originLineargradient[index];
             } else {
-                lineargradient = createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
+                lineargradient = this.createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
                 this.originLineargradient.unshift(lineargradient);
             }
+            // lineargradient = this.createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
             ctx.fillStyle = lineargradient;
             ctx.fillRect(
                 leftBarWidth,
