@@ -4,7 +4,7 @@
  * @Last Modified by: WangAnCheng 1079688386@qq.com
  * @Last Modified time: 2022-02-09 11:03:00
  */
-import { ObjectPool } from "./utils";
+// import { ObjectPool } from "./utils";
 interface IglobalConfig {
     // 左侧标题宽度
     leftBlockTitleWidth: number;
@@ -340,7 +340,8 @@ class Draw extends Utils implements IDraw {
     dataLimit: IselectArroundArr = [];
     // 中间区域所需显示的像素数量
     pixelShow = 1;
-    // originData = [];
+    // 用以存储渐变色lineargradient对象，避免重复创建
+    originLineargradient: CanvasGradient[] = [];
     originColor: IoriginColor = [];
     dateData: Array<WaterFallText | null> = [];
     checkIsDateNum = 0;
@@ -434,6 +435,7 @@ class Draw extends Utils implements IDraw {
             // this.originData.pop();
             this.originColor.pop();
             this.dateData.pop();
+            this.originLineargradient.pop();
         }
         // this.originData.push(data);
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
@@ -547,17 +549,31 @@ class Draw extends Utils implements IDraw {
          * 如何识别是否存在lineargradient对象？
          * 
          */
-        this.originColor.forEach((ele, index) => {
-            ctx.save();
-            const y = index * divHeight;
-            // 右侧文本开始x坐标即中间画布的结束x坐标
-            const lineargradient = ctx.createLinearGradient(leftBarWidth, y, rightTextStartX, y);
+        //  this.originLineargradient
+        // 创建 linergradient对象
+        function createLinearGradient(x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D, ele: string[]) {
+            const lineargradient = ctx.createLinearGradient(x, y, w, h);
             const len = ele.length;
             const times = 1 / len;
             // 这一块是否可以存储起来避免每次都计算一遍？
             ele.forEach((ele1, index1) => {
                 lineargradient.addColorStop(index1 * times, ele1);
             });
+            return lineargradient;
+        }
+        this.originColor.forEach((ele, index) => {
+
+            ctx.save();
+            const y = index * divHeight;
+            // 右侧文本开始x坐标即中间画布的结束x坐标
+            let lineargradient: CanvasGradient;
+            // 将 lineargradient 存储起来避免每次都计算一遍
+            if (index && this.originLineargradient[index - 1]) {
+                lineargradient = this.originLineargradient[index - 1];
+            } else {
+                lineargradient = createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
+                this.originLineargradient.unshift(lineargradient);
+            }
             ctx.fillStyle = lineargradient;
             ctx.fillRect(
                 leftBarWidth,
