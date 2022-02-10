@@ -32,7 +32,7 @@ interface IglobalConfig {
     rightTextGap: number;
     // 中间图表大小
     centerBlockWidth: number;
-    // 每一行数据的高度
+    // 中间瀑布图每一行数据的高度
     divHeight: number;
     // y轴的范围
     minMax: Array<number>;
@@ -156,7 +156,7 @@ const globalConfig: IglobalConfig = {
      */
     centerBlockWidth: 0,
     /**
-     * 每一行数据的高度
+     * 中间瀑布图每一行数据的高度
      */
     divHeight: 1,
     /**
@@ -527,7 +527,13 @@ class Draw extends Utils implements IDraw {
         const ctx = this.ctx;
         // console.log(this.globalConfig);
         // console.log(this.originColor);
-        const { leftBarWidth, rightTextStartX, totalHeight } = this.globalConfig;
+        const {
+            leftBarWidth,
+            rightTextStartX,
+            totalHeight,
+            divHeight,
+            centerBlockWidth
+        } = this.globalConfig;
         // 清除中间区域大小
         this.ctx.clearRect(
             leftBarWidth,
@@ -535,25 +541,29 @@ class Draw extends Utils implements IDraw {
             rightTextStartX,
             totalHeight
         );
-        const x = leftBarWidth;
-        const xEnd = rightTextStartX;
+        // 渲染中间区域
+        /**
+         * 设置数组 存储每次渲染的lineargradient对象。便利originColor时，若存在lineargradient对象，则使用该对象，否则创建新的lineargradient对象
+         * 如何识别是否存在lineargradient对象？
+         * 
+         */
         this.originColor.forEach((ele, index) => {
             ctx.save();
-            // ctx.fillRect(50, index * 2, this.globalConfig.centerBlockWidth, 2);
-            const y = index * this.globalConfig.divHeight;
+            const y = index * divHeight;
             // 右侧文本开始x坐标即中间画布的结束x坐标
-            const lineargradient = ctx.createLinearGradient(x, y, xEnd, y);
+            const lineargradient = ctx.createLinearGradient(leftBarWidth, y, rightTextStartX, y);
             const len = ele.length;
             const times = 1 / len;
+            // 这一块是否可以存储起来避免每次都计算一遍？
             ele.forEach((ele1, index1) => {
                 lineargradient.addColorStop(index1 * times, ele1);
             });
             ctx.fillStyle = lineargradient;
             ctx.fillRect(
-                this.globalConfig.leftBarWidth,
+                leftBarWidth,
                 y,
-                this.globalConfig.centerBlockWidth,
-                this.globalConfig.divHeight
+                centerBlockWidth,
+                divHeight
             );
             ctx.restore();
         });
