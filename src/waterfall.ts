@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2022-02-10 13:42:49
+ * @Last Modified time: 2022-02-25 13:49:34
  */
 // import { ObjectPool } from "./utils";
 interface IglobalConfig {
@@ -374,16 +374,18 @@ class Draw extends Utils implements IDraw {
         const {
             leftBlockColorWidth,
             leftBlockTextWidth,
-            leftBlockTitleWidth,
-            rightBlockEndWidth,
+            // leftBlockTitleWidth,
+            // rightBlockEndWidth,
             rightBlockTextWidth,
             textColor,
             divHeight,
             rightTextGapNum
         } = this.globalConfig;
+        let leftBarWidth = (element.width * .1) + 34;
+        let leftBlockTitleWidth = leftBarWidth - leftBlockTextWidth - leftBlockColorWidth;
         // 计算中间主要渲染区域的宽度
         const centerBlockWidth =
-            element.width - leftBlockColorWidth - leftBlockTextWidth - leftBlockTitleWidth - rightBlockTextWidth - rightBlockEndWidth;
+            (element.width * .8) - 34;
         this.globalConfig = {
             ...this.globalConfig,
             rightTextGap: parseInt((element.height / rightTextGapNum).toString(), 10),
@@ -394,7 +396,9 @@ class Draw extends Utils implements IDraw {
             // 中间渲染色块的宽度
             centerBlockWidth,
             // 色块左侧总宽度
-            leftBarWidth: leftBlockColorWidth + leftBlockTextWidth + leftBlockTitleWidth,
+            leftBarWidth,
+            // 左侧文本高度
+            leftBlockTitleWidth,
             // 中间色块需要渲染的矩形总个数
             maxLen: element.height / divHeight,
             // 右侧文本开始坐标
