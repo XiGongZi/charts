@@ -5,7 +5,54 @@ import { IwaterFallTextInput, IsetText } from './baseInterface';
  * 2. 动静分离管理
  * 3. resize
  */
-interface IOptions {
+// 用户设置的参数
+const userDefaultSetting: IUserSetOptions = {
+    /**
+     * 中间瀑布图每一行数据的高度
+     */
+    divHeight: 1,
+    /**
+     * y轴的范围
+     */
+    minMax: [-20, 120],
+    /**
+     * 右侧文本开始坐标
+     */
+    rightTextStartX: 800,
+    /**
+     * 左侧显示数据，y轴相邻数的差
+     */
+    leftBarShowTimes: 20,
+    /**
+     * 左侧显示的颜色梯度示例
+     */
+    colorArr: [
+        '#FF0000',
+        '#FF0000',
+        '#FF3700',
+        '#FF6E00',
+        '#FFA500',
+        '#FFDC00',
+        '#EBFF00',
+        '#CCFF00',
+        '#8CFF00',
+        '#65FF00',
+        '#0FFF00',
+        '#00FFBF',
+        '#00FAFF',
+        '#00C3FF',
+        '#008BFF',
+        '#0000FF'
+    ]
+}
+interface IUserSetOptions {
+    divHeight?: number;
+    minMax?: [number, number];
+    rightTextStartX?: number;
+    leftBarShowTimes?: number;
+    colorArr?: string[]
+}
+interface IOptions extends IUserSetOptions {
     domWidth: number;
     domHeight: number;
     // 瀑布图左侧总大小
@@ -99,22 +146,28 @@ export class RFCharts {
     }
 }
 
-interface IRFCharts {
-    resize(): void;
-    commit(data: number[]): void;
-}
 // 管控中心
-class RFChartsManager implements IRFCharts {
+class RFChartsManager {
     dom: HTMLElement;
+    // 画布管理，分层画布与draw对象
     canvasClass: CreateCanvas;
+    // 计算模块，用于及时重置各个block的大小
     calcOptions: CalcOptions;
+    // 用户可设置的数项
+    userSetOptions: IUserSetOptions;
     constructor(element: HTMLElement) {
         this.dom = element;
+        this.userSetOptions = userDefaultSetting;
         this.calcOptions = new CalcOptions(element);
         this.canvasClass = new CreateCanvas(element, this.calcOptions);
     }
     // 设置配置
-    setOptions(options: IOptions) {
+    setOptions(options: IUserSetOptions) {
+        // this.userSetOptions = {
+        //     ...userDefaultSetting,
+        //     ...options
+        // }
+        this.calcOptions.setOptions(options);
         this.canvasClass.setCanvas();
         // this.draw();
     }
@@ -148,6 +201,7 @@ class CalcOptions {
         leftBlock_color: 20,
         rightBlock_Total: 0,
         centerBlock_Total: 0,
+        ...userDefaultSetting
     };
     positions: Iposition = {
         leftBlock_xStart: 0,
@@ -166,6 +220,13 @@ class CalcOptions {
         this.dom = element;
         this.reset()
     }
+    setOptions(options: IUserSetOptions) {
+        this.options = {
+            ...this.options,
+            ...options
+        }
+        this.reset()
+    }
     reset() {
         // 设置dom宽高
         this.options.domWidth = this.dom.clientWidth;
@@ -177,9 +238,9 @@ class CalcOptions {
         this.options.rightBlock_Total = this.options.domWidth * 0.05;
         // 计算瀑布图总大小
         this.options.centerBlock_Total = this.options.domWidth * 0.93 - 30;
-        this.options = {
-            ...this.options,
-        }
+        // this.options = {
+        //     ...this.options,
+        // }
         this.positions = this.getPosition();
     }
     getPosition() {
