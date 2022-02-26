@@ -6,8 +6,17 @@ import { IwaterFallTextInput, IsetText } from './baseInterface';
  * 3. resize
  */
 interface IOptions {
-    domWidth?: number;
-    domHeight?: number;
+    domWidth: number;
+    domHeight: number;
+    // 瀑布图左侧总大小
+    leftBlock_Total: number;
+    leftBlock_title: number;
+    leftBlock_text: number,
+    leftBlock_color: number,
+    // 瀑布图右侧总大小
+    rightBlock_Total: number;
+    // 瀑布图总大小
+    centerBlock_Total: number;
 }
 interface ICanvasBase {
     canvas: HTMLCanvasElement;
@@ -17,24 +26,34 @@ interface ICanvasBase {
 class CreateCanvas {
     dom: HTMLElement;
     canvasDomArr: ICanvasBase[] = [];
-    options: IOptions = {
-        domWidth: 0,
-        domHeight: 0
-    };
-    constructor(element: HTMLElement) {
+    calcOptions: CalcOptions;
+    constructor(element: HTMLElement, calcOptions: CalcOptions) {
         this.dom = element;
+        this.calcOptions = calcOptions;
         // 设置dom宽高
         this.resize();
     }
+    resetCalcOptions(calcOptions: CalcOptions) {
+        this.calcOptions = calcOptions;
+    }
+    draw() {
+        // this.resetCalcOptions(this.calcOptions);
+        // 分层绘画 当前为canvas dom层
+        this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
+            // 分层绘画 当前为单个canvas 层
+            canvasBase.drawArr.forEach((draw: RFChartsDraw) => {
+                draw.draw();
+            })
+        });
+    }
     // resize
     resize() {
-        this.options.domHeight = this.dom.clientHeight;
-        this.options.domWidth = this.dom.clientWidth;
-        // 设置canvas宽高
+        this.calcOptions.reset()
         this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
-            canvasBase.canvas.width = this.options.domWidth || 0;
-            canvasBase.canvas.height = this.options.domHeight || 0;
+            canvasBase.canvas.width = this.calcOptions.options.domWidth || 0;
+            canvasBase.canvas.height = this.calcOptions.options.domHeight || 0;
         })
+        this.draw();
     }
     test() {
         this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
@@ -51,8 +70,8 @@ class CreateCanvas {
     setCanvas(index: number = 1) {
         let canvasDom = document.createElement('canvas');
         // 初始化 设置canvas宽高
-        canvasDom.width = this.options.domWidth || 0;
-        canvasDom.height = this.options.domHeight || 0;
+        canvasDom.width = this.calcOptions.options.domWidth || 0;
+        canvasDom.height = this.calcOptions.options.domHeight || 0;
         // 初始化 设置canvas相对定位
         canvasDom.style.position = 'absolute';
         // 初始化 设置canvas层级
@@ -62,10 +81,10 @@ class CreateCanvas {
         this.dom.appendChild(canvasDom);
         // 
         let ctx = canvasDom.getContext("2d", { alpha: index === 1 }) as CanvasRenderingContext2D;
-        let text = new TestText(ctx);
+        let text = new TestBlock(ctx, this.calcOptions);
         this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr: [text] });
         // 测试
-        this.test()
+        // this.test()
     }
 }
 /**
@@ -88,44 +107,118 @@ interface IRFCharts {
 class RFChartsManager implements IRFCharts {
     dom: HTMLElement;
     canvasClass: CreateCanvas;
+    calcOptions: CalcOptions;
     constructor(element: HTMLElement) {
         this.dom = element;
-        this.canvasClass = new CreateCanvas(element);
+        this.calcOptions = new CalcOptions(element);
+        this.canvasClass = new CreateCanvas(element, this.calcOptions);
     }
     // 设置配置
     setOptions(options: IOptions) {
         this.canvasClass.setCanvas();
         // this.draw();
     }
-    draw() {
-        // 分层绘画 当前为canvas dom层
-        this.canvasClass.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
-            // 分层绘画 当前为单个canvas 层
-            canvasBase.drawArr.forEach((draw: RFChartsDraw) => {
-                draw.draw();
-            })
-        });
-    }
     resize(): void {
         this.canvasClass.resize();
-        this.draw();
+        // this.canvasClass.draw();
     }
     commit(data: number[]): void {
         // 
     }
 }
-
-// 绘制对象
-/**
- * 意图：包装canvas，将图表各个基础元素绘制信息设置到 Draw 中，统一通过 内部draw方法绘制
- * 明确设置几种类型 根据类型创建draw对象
- */
-interface IRFChartsDraw {
-    draw(): void;
+interface Iposition {
+    leftBlock_xStart: number;
+    leftBlock_xEnd: number;
+    leftBlock_text_xStart: number;
+    leftBlock_text_xEnd: number;
+    leftBlock_color_xStart: number;
+    leftBlock_color_xEnd: number;
+    centerBlock_xStart: number;
+    centerBlock_xEnd: number;
+    rightBlock_xStart: number;
+    rightBlock_xEnd: number;
 }
-// interface IRFChartsDrawOptions {
-//     type: string;
-// }
+class CalcOptions {
+    options: IOptions = {
+        domWidth: 0,
+        domHeight: 0,
+        leftBlock_Total: 0,
+        leftBlock_title: 0,
+        leftBlock_text: 30,
+        leftBlock_color: 20,
+        rightBlock_Total: 0,
+        centerBlock_Total: 0,
+    };
+    positions: Iposition = {
+        leftBlock_xStart: 0,
+        leftBlock_xEnd: 0,
+        leftBlock_text_xStart: 0,
+        leftBlock_text_xEnd: 0,
+        leftBlock_color_xStart: 0,
+        leftBlock_color_xEnd: 0,
+        centerBlock_xStart: 0,
+        centerBlock_xEnd: 0,
+        rightBlock_xStart: 0,
+        rightBlock_xEnd: 0,
+    };
+    dom: HTMLElement;
+    constructor(element: HTMLElement) {
+        this.dom = element;
+        this.reset()
+    }
+    reset() {
+        // 设置dom宽高
+        this.options.domWidth = this.dom.clientWidth;
+        this.options.domHeight = this.dom.clientHeight;
+        // ---------- 设置各个位置 ----------
+        // 计算瀑布图左侧总大小
+        this.options.leftBlock_Total = this.options.domWidth * 0.02 + 30;
+        // 计算瀑布图右侧总大小
+        this.options.rightBlock_Total = this.options.domWidth * 0.05;
+        // 计算瀑布图总大小
+        this.options.centerBlock_Total = this.options.domWidth * 0.93 - 30;
+        this.options = {
+            ...this.options,
+        }
+        this.positions = this.getPosition();
+    }
+    getPosition() {
+        // ----- 示例 -----
+        //  |  左侧-title 不填充内容 | 左侧-文字图例 | 左侧-颜色块图例  |  中间瀑布图  |  右侧文本  |
+        // 左侧方块 起始位置
+        let leftBlock_xStart = 0;
+        // 左侧方块 结束位置
+        let leftBlock_xEnd = this.options.leftBlock_Total;
+        // 左侧-颜色块图例 起始位置
+        let leftBlock_color_xStart = leftBlock_xEnd - this.options.leftBlock_color;
+        // 左侧-颜色块图例 结束位置
+        let leftBlock_color_xEnd = leftBlock_xEnd;
+        // 左侧-文字图例 起始位置
+        let leftBlock_text_xStart = leftBlock_color_xStart - this.options.leftBlock_text;
+        // 左侧-文字图例 结束位置
+        let leftBlock_text_xEnd = leftBlock_color_xStart;
+        // 中间瀑布图 起始位置
+        let centerBlock_xStart = this.options.leftBlock_Total;
+        // 中间瀑布图 结束位置
+        let centerBlock_xEnd = this.options.domWidth - this.options.rightBlock_Total;
+        // 右侧方块 起始位置
+        let rightBlock_xStart = centerBlock_xEnd;
+        // 右侧方块 结束位置
+        let rightBlock_xEnd = this.options.domWidth;
+        return {
+            leftBlock_xStart,
+            leftBlock_xEnd,
+            leftBlock_text_xStart,
+            leftBlock_text_xEnd,
+            leftBlock_color_xStart,
+            leftBlock_color_xEnd,
+            centerBlock_xStart,
+            centerBlock_xEnd,
+            rightBlock_xStart,
+            rightBlock_xEnd,
+        }
+    }
+}
 class RFChartsDraw {
     ctx: CanvasRenderingContext2D;
     constructor(ctx: CanvasRenderingContext2D) {
@@ -133,11 +226,30 @@ class RFChartsDraw {
     }
     draw() { }
 }
+class TestBlock extends RFChartsDraw {
+    calcOptions: CalcOptions;
+    constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions) {
+        super(ctx);
+        this.calcOptions = calcOptions;
+    }
+    draw(): void {
+        this.ctx.save();
+        this.ctx.fillStyle = 'red';
+        this.ctx.fillRect(this.calcOptions.positions.leftBlock_xStart, 0, this.calcOptions.positions.leftBlock_xEnd - this.calcOptions.positions.leftBlock_xStart, this.calcOptions.options.domHeight);
+        this.ctx.fillStyle = 'blue';
+        this.ctx.fillRect(this.calcOptions.positions.leftBlock_color_xStart, 0, this.calcOptions.positions.leftBlock_color_xEnd - this.calcOptions.positions.leftBlock_color_xStart, this.calcOptions.options.domHeight);
+        this.ctx.fillStyle = 'green';
+        this.ctx.fillRect(this.calcOptions.positions.leftBlock_text_xStart, 0, this.calcOptions.positions.leftBlock_text_xEnd - this.calcOptions.positions.leftBlock_text_xStart, this.calcOptions.options.domHeight);
+        this.ctx.fillStyle = '#880000';
+        this.ctx.fillRect(this.calcOptions.positions.centerBlock_xStart, 0, this.calcOptions.positions.centerBlock_xEnd - this.calcOptions.positions.centerBlock_xStart, this.calcOptions.options.domHeight);
+        this.ctx.fillStyle = '#888800';
+        this.ctx.fillRect(this.calcOptions.positions.rightBlock_xStart, 0, this.calcOptions.positions.rightBlock_xEnd - this.calcOptions.positions.rightBlock_xStart, this.calcOptions.options.domHeight);
+        this.ctx.restore();
+    }
+}
 class TestText extends RFChartsDraw {
-    ctx: CanvasRenderingContext2D;
     constructor(ctx: CanvasRenderingContext2D) {
         super(ctx);
-        this.ctx = ctx;
     }
     draw() {
         this.ctx.save();
@@ -145,40 +257,6 @@ class TestText extends RFChartsDraw {
         this.ctx.fillStyle = 'rgba(22,22,22,1)';
         this.ctx.fillText('测试', 100, 100);
         this.ctx.restore();
-    }
-}
-class WaterFallText extends RFChartsDraw implements IwaterFallTextInput {
-    x: number = 0;
-    y: number = 0;
-    step;
-    ctx: CanvasRenderingContext2D = CanvasRenderingContext2D.prototype;
-    text = "";
-    textAlign;
-    constructor({ ctx, step = 1, textAlign = "left" }: IwaterFallTextInput) {
-        super(ctx);
-        this.step = step;
-        this.ctx = ctx;
-        this.textAlign = textAlign;
-    }
-    set({ x = 0, y = 0, text = 'left' }: IsetText) {
-        this.x = x;
-        this.y = y;
-        this.text = text;
-    }
-    draw() {
-        this.y = this.y + this.step;
-        this.fillText();
-    }
-    fillText() {
-        this.ctx.save();
-        this.ctx.textAlign = this.textAlign;
-        this.ctx.fillText(this.text, this.x, this.y);
-        this.ctx.restore();
-    }
-    update(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-        this.fillText();
     }
 }
 /**
@@ -193,21 +271,3 @@ class WaterFallText extends RFChartsDraw implements IwaterFallTextInput {
  * 初始化 --》 计算对应位置 --》 生成draw对象 --》 绘制
  * commit数据 --》 更新draw对象 --》 绘制
  */
-
-// 对象池
-// class RFChartsPool {
-//     // 池子
-//     pool: IRFChartsDraw[] = [];
-//     constructor() {
-//         // 初始化
-//     }
-//     // 回收
-//     recycle(draw: IRFChartsDraw) {
-//         this.pool.push(draw);
-//     }
-//     // 创建
-//     create() {
-//         let draw = new RFChartsDraw(this.ctx);
-//         return draw;
-//     }
-// }
