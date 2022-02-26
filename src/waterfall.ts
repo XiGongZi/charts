@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2022-02-25 13:49:34
+ * @Last Modified time: 2022-02-25 14:54:21
  */
 // import { ObjectPool } from "./utils";
 interface IglobalConfig {
@@ -175,6 +175,7 @@ const globalConfig: IglobalConfig = {
      * 左侧显示的颜色梯度示例
      */
     colorArr: [
+        '#FF0000',
         '#FF0000',
         '#FF3700',
         '#FF6E00',
@@ -381,11 +382,11 @@ class Draw extends Utils implements IDraw {
             divHeight,
             rightTextGapNum
         } = this.globalConfig;
-        let leftBarWidth = (element.width * .1) + 34;
+        let leftBarWidth = (element.width * .02) + 30;
         let leftBlockTitleWidth = leftBarWidth - leftBlockTextWidth - leftBlockColorWidth;
         // 计算中间主要渲染区域的宽度
         const centerBlockWidth =
-            (element.width * .8) - 34;
+            (element.width * .93) - 30;
         this.globalConfig = {
             ...this.globalConfig,
             rightTextGap: parseInt((element.height / rightTextGapNum).toString(), 10),
@@ -430,7 +431,8 @@ class Draw extends Utils implements IDraw {
      */
     commit(_data: IInputDataArr) {
         // 【优化】根据需要显示的像素数量筛选出目标数量的数据
-        const data = this.filter({ target: this.pixelShow, data: _data });
+        const data = _data;
+        // const data = this.filter({ target: this.pixelShow, data: _data });
         if (!Array.isArray(data)) console.error('commit function need Array!');
         const len = this.originColor.length;
         // let len = this.originData.length;
