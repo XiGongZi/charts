@@ -62,7 +62,7 @@ class CreateCanvas {
         this.dom.appendChild(canvasDom);
         // 
         let ctx = canvasDom.getContext("2d", { alpha: index === 1 }) as CanvasRenderingContext2D;
-        let text = new WaterFallText({ ctx });
+        let text = new TestText(ctx);
         this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr: [text] });
         // 测试
         this.test()
@@ -95,9 +95,20 @@ class RFChartsManager implements IRFCharts {
     // 设置配置
     setOptions(options: IOptions) {
         this.canvasClass.setCanvas();
+        // this.draw();
+    }
+    draw() {
+        // 分层绘画 当前为canvas dom层
+        this.canvasClass.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
+            // 分层绘画 当前为单个canvas 层
+            canvasBase.drawArr.forEach((draw: RFChartsDraw) => {
+                draw.draw();
+            })
+        });
     }
     resize(): void {
         this.canvasClass.resize();
+        this.draw();
     }
     commit(data: number[]): void {
         // 
@@ -119,6 +130,21 @@ class RFChartsDraw {
     ctx: CanvasRenderingContext2D;
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
+    }
+    draw() { }
+}
+class TestText extends RFChartsDraw {
+    ctx: CanvasRenderingContext2D;
+    constructor(ctx: CanvasRenderingContext2D) {
+        super(ctx);
+        this.ctx = ctx;
+    }
+    draw() {
+        this.ctx.save();
+        console.log(111)
+        this.ctx.fillStyle = 'rgba(22,22,22,1)';
+        this.ctx.fillText('测试', 100, 100);
+        this.ctx.restore();
     }
 }
 class WaterFallText extends RFChartsDraw implements IwaterFallTextInput {
@@ -160,6 +186,12 @@ class WaterFallText extends RFChartsDraw implements IwaterFallTextInput {
  *      canvasArr
  *          canvasInfo
  *          DrawArr
+ *              Text
+ *              Line
+ *              colorBlock
+ *
+ * 初始化 --》 计算对应位置 --》 生成draw对象 --》 绘制
+ * commit数据 --》 更新draw对象 --》 绘制
  */
 
 // 对象池
