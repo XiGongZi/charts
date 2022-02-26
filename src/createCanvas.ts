@@ -70,6 +70,25 @@ interface ICanvasBase {
     ctx: CanvasRenderingContext2D;
     drawArr: RFChartsDraw[]
 }
+
+class Utils {
+    constructor() { }
+    getDate(): string {
+        const datetime = new Date();
+        const hh = datetime.getHours();
+        const MF = datetime.getMinutes();
+        const mf = MF < 10 ? '0' + MF : MF;
+        const SS = datetime.getSeconds();
+        const ss = SS < 10 ? '0' + SS : SS;
+        return hh + ':' + mf + ':' + ss;
+    }
+    setText({ textAlign = 'left', ctx, text = '', x = 0, y = 0 }: IwaterFallTextInput) {
+        ctx.save();
+        ctx.textAlign = textAlign;
+        ctx.fillText(text, x, y);
+        ctx.restore();
+    }
+}
 class CreateCanvas {
     dom: HTMLElement;
     canvasDomArr: ICanvasBase[] = [];
@@ -280,12 +299,75 @@ class CalcOptions {
         }
     }
 }
-class RFChartsDraw {
+class RFChartsDraw extends Utils {
     ctx: CanvasRenderingContext2D;
     constructor(ctx: CanvasRenderingContext2D) {
+        super();
         this.ctx = ctx;
     }
     draw() { }
+}
+// 左侧文本与图例
+class DrawLeftBlock extends RFChartsDraw {
+    ctx: CanvasRenderingContext2D;
+    calcOptions: CalcOptions;
+    times: number = 1;
+    minMax: [number, number] = [0, 0];
+    childHeightText: number = 0;
+    leftBarShowTimes: number = 0;
+    constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions) {
+        super(ctx);
+        this.ctx = ctx;
+        this.calcOptions = calcOptions;
+    }
+    reset() {
+        const { minMax, leftBarShowTimes, domHeight } = this.calcOptions.options;
+        // 只有minmax和 leftBarShowTimes 都存在时 才继续
+        const times = minMax && leftBarShowTimes ? (minMax[1] - minMax[0]) / leftBarShowTimes : 0;
+        this.minMax = minMax || [0, 0];
+        this.leftBarShowTimes = leftBarShowTimes || 0;
+        if (times <= 0) return;
+        this.childHeightText = domHeight / times;
+    }
+    draw(): void {
+        let { minMax, colorArr } = this.calcOptions.options;
+        colorArr = colorArr || [];
+        const { domHeight } = this.calcOptions.options;
+        const { leftBlock_xStart, leftBlock_text_xStart, leftBlock_color_xStart, leftBlock_color_xEnd } = this.calcOptions.positions;
+        const ctx = this.ctx;
+        minMax = minMax || [0, 0];
+        for (let i = 0; i < this.times; i++) {
+            this.setText({
+                ctx,
+                textAlign: 'center',
+                x: leftBlock_xStart,
+                y: this.childHeightText * i + 10,
+                text: (minMax[1] - i * this.leftBarShowTimes).toString()
+            });
+        }
+        this.setText({
+            ctx,
+            textAlign: 'center',
+            x: leftBlock_text_xStart,
+            y: domHeight - 4,
+            text: minMax[0].toString()
+        });
+        // 生成色块范围
+        const len = colorArr.length;
+        const childHeight = domHeight / len;
+        colorArr.forEach((ele, index) => {
+            ctx.save();
+            ctx.fillStyle = ele;
+            ctx.fillRect(
+                leftBlock_color_xStart,
+                index * childHeight,
+                leftBlock_color_xEnd,
+                childHeight
+            );
+            ctx.restore();
+        });
+    }
+
 }
 class TestBlock extends RFChartsDraw {
     calcOptions: CalcOptions;
