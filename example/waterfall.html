@@ -10,151 +10,28 @@
 </head>
 
 <body>
-    <div style="width:100%;height:100%">
-        <canvas style="background: #f2f2f2" id="canvas" width="900" height="300"></canvas>
-    </div>
-    <br />
     <button onclick="start()">start</button>
-    <button onclick="over()">over</button>
-    <!-- <button onclick="debugs()">debugs</button> -->
-
-    
+    <!-- <button onclick="over()">over</button> -->
+    <div class="" style="height:400px">
+        <div class="" id="app2" style="width:100%;height:100%"></div>
+    </div>
 </body>
 <script type="module">
-    import WaterFall from '../src/waterfall.ts';
-    // import WaterFall from '../public/waterfall.js';
-    // // 传入canvas的元素ID
-    // const flow = new WaterFall('canvas');
-    // // 初始化
-    // flow.init();
-    // 更新数据 传入每一行应显示的数据数组,如 [2,3,1,4,5]
-    // setInterval(() => {
-    //     flow.update([100, 60, 40, 20, 40, 50, 100, 40, 30]);
-    // }, 50);
-
-    // 创建canvas画布 并初始化 waterFall 对象
-    const flow = new WaterFall('canvas');
-    const flowOptions = {
-        // ...配置项，可不填
-        minMax: [-120, -60],
-        leftBlockTextWidth: 30,
-        leftBlockTitleWidth: 90,
-        leftBlockColorWidth: 10,
-        rightBlockEndWidth:120,
-        // textColor: '#ff0000',
-        leftBarShowTimes: 10,
-        // divHeight:10
-    };
-    // 创建完毕后调用init方法初始化
-    flow.init(flowOptions);
+    import {RFCharts} from "../src/createCanvas.ts"
+// 暂时只考虑waterfall
+    let app0 = new RFCharts();
+    let canvas = app0.init(document.getElementById('app2'));
+    canvas.setOptions();
+    // canvas.setCanvas();
+    // 绑定start事件 执行resize方法
+    window.start = function() {
+        canvas.resize();
+    }
+    // 当windows 尺寸变化时，调用canvas.resize() 重新设置canvas的尺寸
+    // window.onresize = function() {
+    //     canvas.resize();
+    // }
     
-    window.debugs = function() {
-        // 更新数据 传入每一行应显示的数据数组,如 [2,3,1,4,5]
-        const needCon=[
-            // blue
-        [ -117,-117],
-        [ -110,-110],
-        [ -90,-90],
-        [ -88,-88],
-        [ -75,-75],
-        // red
-        [ -61,-61],
-        ]
-        // needCon.forEach(item=>{
-        //     flow.update(item);
-        // })
-        let num = 0;
-        let time = setInterval(() => {
-            if (num>=needCon.length) return clearInterval(time);
-            flow.update(needCon[num]);
-            num++;
-        }, 100);
-    }
-    // debugs()
-    // socket链接
-    let ws;
-    // 开始
-    window.start = function () {
-        console.log('start');
-        over()
-        getDataBySokcet();
-    }
-    // 结束
-    window.over = function () {
-        console.log('over', !!ws);
-        if (ws) {
-            ws.close();
-            ws = null;
-        }
-    }
-    // websocket get data
-    function getDataBySokcet() {
-
-        ws = new WebSocket("ws://192.168.0.173:3000/ws"); //公网
-        let obj = {};
-        obj = {};
-
-        ws.onopen = () => {
-            console.log("纳特实时调用websocket连接已打开...");
-            let cmd = JSON.stringify(obj);
-            console.log("cmd:", cmd);
-            ws.send(cmd);
-        };
-
-        ws.onmessage = (evt) => {
-            // console.log("##########频谱图表收到信息#############");
-            // console.log(evt)
-            let traceData = evt.data;
-            let traceDataObj = JSON.parse(traceData);
-            // console.log(traceDataObj)
-            if (traceDataObj.type === "status" || traceDataObj.type === undefined) {
-                return;
-            }
-            if (
-                traceDataObj.bizResText !== undefined &&
-                traceDataObj.bizResText !== "ok"
-            ) {
-                console.log("状态:", JSON.stringify(traceDataObj));
-            } else {
-                // console.log(traceDataObj)
-                const [x, y] = onRecords_nateBoer_B_PScan(traceDataObj);
-                flow.update(y);
-            }
-        };
-
-        ws.onclose = () => {
-            // lineChart.hideLoading();
-            console.log("纳特实时调用websocket连接已关闭...");
-        };
-    }
-
-    /**
-     * @description 纳特-波尔 全景扫描处理方法
-     */
-    const onRecords_nateBoer_B_PScan = ({
-        current,
-        type,
-        startfreq,
-        stepfreq,
-    }) => {
-        // console.log('onRecord 类型 - >', type, startfreq, stepfreq)
-        //如果是频谱数据才进行处理
-        if (type === "spectrum") {
-            let currentTrace = current.data.split(",");
-            let freqPoint = [];
-            let pointCount = currentTrace.length;
-            for (let i = 0; i < pointCount; i++) {
-                //原子封装接口返回的数据大了10倍 因此此处需要进行处理 并转换为dBm值-107
-                currentTrace[i] = parseFloat(parseFloat(currentTrace[i]) / 10 - 107);
-                freqPoint.push(
-                    parseInt((parseInt(startfreq) + i * parseInt(stepfreq)) / 1000000)
-                );
-            }
-            let historyTrace = [];
-            let freqPointHis = [];
-            return [freqPoint, currentTrace, freqPointHis, historyTrace];
-        }
-    };
 </script>
 
 </html>
