@@ -35,6 +35,10 @@ export interface IwaterFallTextInput extends IsetText, Ictx {
 }
 
 /**
+ * 存储瀑布图每一行数据对应的颜色值
+ */
+export type IInputDataColorArr = Array<string>;
+/**
  * 输入的元数据，应为每个元素都为number的数组
  */
 export type IInputDataArr = Array<number>;

@@ -1,4 +1,4 @@
-import { ISpectraColor, IInputDataArr } from './baseInterface';
+import { IInputDataColorArr, ISpectraColor, IInputDataArr } from './baseInterface';
 // 创建管理画布
 /**
  * 1. 分层
@@ -7,10 +7,6 @@ import { ISpectraColor, IInputDataArr } from './baseInterface';
  */
 // 用户设置的参数
 const userDefaultSetting: IUserSetOptions = {
-    /**
-     * 中间瀑布图每一行数据的高度
-     */
-    divHeight: 1,
     /**
      * y轴的范围
      */
@@ -46,7 +42,7 @@ const userDefaultSetting: IUserSetOptions = {
     ]
 }
 interface IUserSetOptions {
-    divHeight?: number;
+    // divHeight?: number;
     minMax?: [number, number];
     rightTextStartX?: number;
     leftBarShowTimes?: number;
@@ -91,6 +87,29 @@ class Utils {
             num += step;
         }
         return arr;
+    }
+
+    // 给定数组数值，输出对象的范围
+    checkArround(arr: IInputDataArr = [], arrColor: ISpectraColor[] = []): IInputDataColorArr {
+        const res: IInputDataColorArr = [];
+        // 算法优化
+        // O(mn)  =>
+        arr.forEach((ele) => {
+            let flag = false;
+            // 查找元数据每个成员所在范围对应的颜色，若超出范围则置入默认颜色
+            arrColor.forEach((item) => {
+                if (!flag) {
+                    // 如果在范围内则push
+                    if (ele >= item.min && ele <= item.max) {
+                        flag = true;
+                        res.push(item.color);
+                    }
+                }
+            });
+            // 如果不在范围内则填充灰色
+            if (!flag) res.push('#f2f2f2');
+        });
+        return res;
     }
     getDate(): string {
         const datetime = new Date();
@@ -240,6 +259,7 @@ class CalcOptions {
         rightBlock_xStart: 0,
         rightBlock_xEnd: 0,
     };
+    // 瀑布图 每一个数据值区间所对应的颜色限制
     spectraColor: ISpectraColor[] = [];
     dom: HTMLElement;
     constructor(element: HTMLElement) {
@@ -272,7 +292,6 @@ class CalcOptions {
         this.genSpectraColor(this.options)
         console.log(this.spectraColor)
     }
-
     /**
      *
      * @param param0 interface IglobalConfig
@@ -409,6 +428,54 @@ class DrawLeftBlock extends RFChartsDraw {
         ctx.restore();
     }
 
+}
+// 做数据转换与存储
+class DataControl extends Utils {
+    calcOptions: CalcOptions;
+    // 元数据
+    originData: IInputDataArr = [];
+
+    // 用以存储渐变色lineargradient对象，避免重复创建
+    originLineargradient: CanvasGradient[] = [];
+    // 颜色数组
+    colorArr: IInputDataColorArr[] = [];
+    checkIsDateNum = 0;
+    /**
+     * 右侧时间文本间隔多少个渲染一次(当前70)
+     */
+    checkIsDateNumLimit = 70;
+    constructor(options: CalcOptions) {
+        super();
+        this.calcOptions = options;
+    }
+    commit(data: IInputDataArr) {
+        if (!Array.isArray(data)) throw new Error('commit function need Array!');
+        const len = this.originData.length;
+        // const {divHeight} = this.options;
+        // let len = this.originData.length;
+        // 这里加20是为了让右侧时间文本下落到最后时能超出显示区域再移除
+        if (len >= this.calcOptions.options.domHeight + 20) {
+            // 如果长度超了，删除数组最后元素
+            // this.originData.pop();
+            this.originData.pop();
+            // this.dateData.pop();
+            this.originLineargradient.pop();
+        }
+        // this.originData.push(data);
+        if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
+            this.checkIsDateNum = 0;
+        }
+        // 将元数据转换成目标色彩
+        const colorArr = this.checkArround(data, this.calcOptions.spectraColor);
+        // this.createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
+        // 添加进渲染队列
+        this.colorArr.unshift(colorArr);
+        // this.originData.unshift(data);
+        // checkIsDateNum 等于一个比 checkIsDateNumLimit小的数就可以了，这样checkIsDateNum在0到checkIsDateNumLimit循环的时候有一次对应上就赋值日期
+        // this.dateData.unshift(this.setRightDateHtml(!this.checkIsDateNum));
+        // this.update();
+        this.checkIsDateNum++;
+    }
 }
 /**
  * manager
