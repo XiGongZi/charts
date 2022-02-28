@@ -67,8 +67,12 @@ interface ICanvasBase {
     drawArr: RFChartsDraw[]
 }
 
+type TcheckIsNeedPopData = IInputDataArr[] | CanvasGradient[] | IInputDataColorArr[]
 class Utils {
     constructor() { }
+    checkIsNeedPopData(arr: TcheckIsNeedPopData, limit: number) {
+        if (arr.length >= limit + 20) arr.pop()
+    }
     // 从源数据中过滤出目标数量，尽量平均
     filter({ target = 300, data = [] }: { target: number; data: IInputDataArr }): IInputDataArr {
         const len = data.length;
@@ -409,7 +413,8 @@ class DrawCenterWaterfall extends RFChartsDraw {
 
         colorArr.forEach((ele, index) => {
             ctx.save();
-            const y = index + 1;
+            // console.log(ele)
+            const y = index;
             // 右侧文本开始x坐标即中间画布的结束x坐标
             let lineargradient: CanvasGradient;
             // 将 lineargradient 存储起来避免每次都计算一遍
@@ -440,6 +445,8 @@ class DrawCenterWaterfall extends RFChartsDraw {
             // })
             ctx.restore();
         });
+
+        this.checkIsNeedPopData(this.originLineargradient, domHeight);
     }
     // 画矩形
     private createLinearGradient(x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D, ele: string[]) {
@@ -540,17 +547,20 @@ class DataOptions extends Utils {
         if (!Array.isArray(data)) throw new Error('commit function need Array!');
         data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
         const len = this.originData.length;
+        const { domHeight } = this.calcOptions.options;
         // const {divHeight} = this.options;
         // let len = this.originData.length;
         // console.log(this.calcOptions.options.domHeight)
         // 这里加20是为了让右侧时间文本下落到最后时能超出显示区域再移除
-        if (len >= this.calcOptions.options.domHeight + 20) {
-            // 如果长度超了，删除数组最后元素
-            this.originData.pop();
-            this.originData.pop();
-            // this.dateData.pop();
-            this.originLineargradient.pop();
-        }
+        // if (len >= this.calcOptions.options.domHeight + 20) {
+        //     // 如果长度超了，删除数组最后元素
+        //     // this.originData.pop();
+        //     // this.originData.pop();
+        //     // this.dateData.pop();
+        //     this.originLineargradient.pop();
+        // }
+        this.checkIsNeedPopData(this.originData, domHeight);
+        this.checkIsNeedPopData(this.originLineargradient, domHeight);
         // 将元数据转换成目标色彩
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
             this.checkIsDateNum = 0;
