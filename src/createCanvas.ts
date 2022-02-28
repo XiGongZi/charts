@@ -149,6 +149,7 @@ class CreateCanvas {
     // resize
     resize() {
         this.calcOptions.reset()
+        // 为每一个canvas同步新尺寸
         this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
             canvasBase.canvas.width = this.calcOptions.options.domWidth || 0;
             canvasBase.canvas.height = this.calcOptions.options.domHeight || 0;
@@ -272,6 +273,7 @@ class CalcOptions {
     constructor(element: HTMLElement) {
         this.dom = element;
         this.reset()
+        this.genSpectraColor(this.options)
     }
     setOptions(options: IUserSetOptions) {
         this.options = {
@@ -279,7 +281,10 @@ class CalcOptions {
             ...options
         }
         // 如果用户设置了参数 再reset
-        if (options) this.reset()
+        if (options) {
+            this.reset()
+            this.genSpectraColor(this.options)
+        }
     }
     reset() {
         // 设置dom宽高
@@ -296,7 +301,6 @@ class CalcOptions {
         //     ...this.options,
         // }
         this.positions = this.getPosition();
-        this.genSpectraColor(this.options)
         // console.log(this.spectraColor)
     }
     /**
