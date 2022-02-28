@@ -494,4 +494,6 @@ class DataControl extends Utils {
  * dataControl
  * 输入: 元数据，number[]
  * 输出: 颜色数组，color-string[] 元数据 number[]
+ * 
+ * 生成获取socket方法
  */
