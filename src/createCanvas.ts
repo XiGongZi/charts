@@ -1,3 +1,4 @@
+import { IInputDataArr } from './baseInterface';
 // 创建管理画布
 /**
  * 1. 分层
@@ -72,6 +73,25 @@ interface ICanvasBase {
 
 class Utils {
     constructor() { }
+    // 从源数据中过滤出目标数量，尽量平均
+    filter({ target = 300, data = [] }: { target: number; data: IInputDataArr }): IInputDataArr {
+        const len = data.length;
+        // 小于等于target
+        if (len <= target) return data;
+        // 若大于target
+        /**
+         * 先按照矩形拆成目标个数的格子
+         * 然后取每一个格子内的最后一个整数，作为下标去取源数据对应的像素颜色
+         */
+        const step = len / target;
+        const arr: IInputDataArr = [];
+        let num = step;
+        for (let i = 0; i < target; i++) {
+            arr.push(data[Math.floor(num) - 1]);
+            num += step;
+        }
+        return arr;
+    }
     getDate(): string {
         const datetime = new Date();
         const hh = datetime.getHours();
@@ -293,6 +313,16 @@ class RFChartsDraw extends Utils {
     }
     draw() { }
 }
+// 绘制中间瀑布图
+class DrawCenterWaterfall extends RFChartsDraw {
+    ctx: CanvasRenderingContext2D;
+    calcOptions: CalcOptions;
+    constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions) {
+        super(ctx);
+        this.ctx = ctx;
+        this.calcOptions = calcOptions;
+    }
+}
 // 左侧文本与图例
 class DrawLeftBlock extends RFChartsDraw {
     ctx: CanvasRenderingContext2D;
@@ -321,12 +351,14 @@ class DrawLeftBlock extends RFChartsDraw {
     draw(): void {
         let { minMax, colorArr } = this.calcOptions.options;
         colorArr = colorArr || [];
-        const { domHeight, leftBlock_color } = this.calcOptions.options;
+        const { domHeight, leftBlock_color, leftBlock_Total } = this.calcOptions.options;
         const { leftBlock_text_xStart, leftBlock_color_xStart } = this.calcOptions.positions;
         const ctx = this.ctx;
         minMax = minMax || [0, 0];
 
         ctx.save();
+        // 清除左侧文本与图例
+        ctx.clearRect(0, 0, leftBlock_Total, domHeight);
         // 绘制左侧文本
         ctx.textAlign = "center";
         ctx.fillStyle = "#ffffff";
@@ -359,7 +391,13 @@ class DrawLeftBlock extends RFChartsDraw {
  *              Text
  *              Line
  *              colorBlock
+ * 
+ *      dataControl
  *
  * 初始化 --》 计算对应位置 --》 生成draw对象 --》 绘制
  * commit数据 --》 更新draw对象 --》 绘制
+ * 
+ * dataControl
+ * 输入: 元数据，number[]
+ * 输出: 颜色数组，color-string[] 元数据 number[]
  */

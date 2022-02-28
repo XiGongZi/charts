@@ -40,3 +40,8 @@ export interface IsetText extends IsetPosi {
 export interface IwaterFallTextInput extends IsetText, Ictx {
     step?: number;
 }
+
+/**
+ * 输入的元数据，应为每个元素都为number的数组
+ */
+export type IInputDataArr = Array<number>;
