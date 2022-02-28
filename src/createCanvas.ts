@@ -14,7 +14,7 @@ const userDefaultSetting: IUserSetOptions = {
     /**
      * 右侧文本开始坐标
      */
-    rightTextStartX: 800,
+    rightTextStartX: 0,
     /**
      * 左侧显示数据，y轴相邻数的差
      */
@@ -44,9 +44,9 @@ const userDefaultSetting: IUserSetOptions = {
 interface IUserSetOptions {
     // divHeight?: number;
     minMax?: [number, number];
-    rightTextStartX?: number;
     leftBarShowTimes?: number;
     colorArr?: string[]
+    rightTextStartX?: number;
 }
 interface IOptions extends IUserSetOptions {
     domWidth: number;
@@ -125,9 +125,11 @@ class CreateCanvas {
     dom: HTMLElement;
     canvasDomArr: ICanvasBase[] = [];
     calcOptions: CalcOptions;
-    constructor(element: HTMLElement, calcOptions: CalcOptions) {
+    dataOptions: DataOptions;
+    constructor(element: HTMLElement, calcOptions: CalcOptions, dataOptions: DataOptions) {
         this.dom = element;
         this.calcOptions = calcOptions;
+        this.dataOptions = dataOptions;
         // 设置dom宽高
         // this.resize();
     }
@@ -169,9 +171,10 @@ class CreateCanvas {
         // 
         let ctx = canvasDom.getContext("2d", { alpha: index === 1 }) as CanvasRenderingContext2D;
         let drawArr = [];
-        // drawArr.push(new TestBlock(ctx, this.calcOptions))
+        // 左侧图例
         drawArr.push(new DrawLeftBlock(ctx, this.calcOptions))
-
+        // 中间瀑布图
+        drawArr.push(new DrawCenterWaterfall(ctx, this.calcOptions, this.dataOptions))
         this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr });
         // 测试
         // this.test()
@@ -195,15 +198,18 @@ class RFChartsManager {
     dom: HTMLElement;
     // 画布管理，分层画布与draw对象
     canvasClass: CreateCanvas;
-    // 计算模块，用于及时重置各个block的大小
+    // 画布位置计算模块，用于及时重置各个block的大小
     calcOptions: CalcOptions;
+    // 渲染数据计算模块
+    dataOptions: DataOptions;
     // 用户可设置的数项
     userSetOptions: IUserSetOptions;
     constructor(element: HTMLElement) {
         this.dom = element;
         this.userSetOptions = userDefaultSetting;
         this.calcOptions = new CalcOptions(element);
-        this.canvasClass = new CreateCanvas(element, this.calcOptions);
+        this.dataOptions = new DataOptions(this.calcOptions);
+        this.canvasClass = new CreateCanvas(element, this.calcOptions, this.dataOptions);
     }
     // 设置配置
     setOptions(options: IUserSetOptions) {
@@ -219,8 +225,9 @@ class RFChartsManager {
         this.canvasClass.resize();
         // this.canvasClass.draw();
     }
-    commit(data: number[]): void {
-        // 
+    update(data: number[]): void {
+        this.dataOptions.commit(data);
+        this.canvasClass.draw();
     }
 }
 interface Iposition {
@@ -290,7 +297,7 @@ class CalcOptions {
         // }
         this.positions = this.getPosition();
         this.genSpectraColor(this.options)
-        console.log(this.spectraColor)
+        // console.log(this.spectraColor)
     }
     /**
      *
@@ -363,10 +370,84 @@ class RFChartsDraw extends Utils {
 class DrawCenterWaterfall extends RFChartsDraw {
     ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
-    constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions) {
+    dataOptions: DataOptions;
+    originLineargradient: CanvasGradient[] = [];
+    constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions, dataOptions: DataOptions) {
         super(ctx);
         this.ctx = ctx;
         this.calcOptions = calcOptions;
+        this.dataOptions = dataOptions;
+    }
+    /**
+     * @name renderCenterImg
+     * @description 渲染中间区域内容
+     */
+    draw() {
+        // console.log("DrawCenterWaterfall!")
+        // update
+        const ctx = this.ctx;
+        // console.log(this.globalConfig);
+        // console.log(this.originColor);
+        const {
+            leftBlock_Total,
+            domHeight,
+            centerBlock_Total
+        } = this.calcOptions.options;
+        const rightTextStartX = this.calcOptions.options.rightTextStartX || 0;
+        const { colorArr } = this.dataOptions;
+        // console.log(this.dataOptions.originData)
+        // this.ctx.clearRect(
+        //     leftBlock_Total,
+        //     0,
+        //     rightTextStartX,
+        //     domHeight
+        // );
+
+        colorArr.forEach((ele, index) => {
+            ctx.save();
+            const y = index + 1;
+            // 右侧文本开始x坐标即中间画布的结束x坐标
+            let lineargradient: CanvasGradient;
+            // 将 lineargradient 存储起来避免每次都计算一遍
+            if (index && this.originLineargradient[index]) {
+                lineargradient = this.originLineargradient[index];
+            } else {
+                lineargradient = this.createLinearGradient(leftBlock_Total, y, rightTextStartX, y, ctx, ele);
+                this.originLineargradient.unshift(lineargradient);
+            }
+            // lineargradient = this.createLinearGradient(leftBlock_Total, y, rightTextStartX || 0, y, ctx, ele);
+            ctx.fillStyle = lineargradient;
+            ctx.fillRect(
+                leftBlock_Total,
+                y,
+                centerBlock_Total,
+                1
+            );
+            // ele.forEach((ele1, index1) => {
+            //     ctx.save();
+            //     ctx.fillStyle = ele1;
+            //     ctx.fillRect(
+            //         leftBlock_Total + index1,
+            //         y,
+            //         1,
+            //         1
+            //     );
+            //     ctx.restore();
+            // })
+            ctx.restore();
+        });
+    }
+    // 画矩形
+    private createLinearGradient(x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D, ele: string[]) {
+        const lineargradient = ctx.createLinearGradient(x, y, w, h);
+        const len = ele.length;
+        const times = (1 / len);
+        // 这一块是否可以存储起来避免每次都计算一遍？
+        ele.forEach((ele1, index1) => {
+
+            lineargradient.addColorStop(index1 * times, ele1);
+        });
+        return lineargradient;
     }
 }
 // 左侧文本与图例
@@ -430,10 +511,11 @@ class DrawLeftBlock extends RFChartsDraw {
 
 }
 // 做数据转换与存储
-class DataControl extends Utils {
+class DataOptions extends Utils {
+    // ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
     // 元数据
-    originData: IInputDataArr = [];
+    originData: IInputDataArr[] = [];
 
     // 用以存储渐变色lineargradient对象，避免重复创建
     originLineargradient: CanvasGradient[] = [];
@@ -446,31 +528,35 @@ class DataControl extends Utils {
     checkIsDateNumLimit = 70;
     constructor(options: CalcOptions) {
         super();
+        // this.ctx = ctx;
         this.calcOptions = options;
     }
+
     commit(data: IInputDataArr) {
         if (!Array.isArray(data)) throw new Error('commit function need Array!');
+        data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
         const len = this.originData.length;
         // const {divHeight} = this.options;
         // let len = this.originData.length;
+        // console.log(this.calcOptions.options.domHeight)
         // 这里加20是为了让右侧时间文本下落到最后时能超出显示区域再移除
         if (len >= this.calcOptions.options.domHeight + 20) {
             // 如果长度超了，删除数组最后元素
-            // this.originData.pop();
+            this.originData.pop();
             this.originData.pop();
             // this.dateData.pop();
             this.originLineargradient.pop();
         }
-        // this.originData.push(data);
+        // 将元数据转换成目标色彩
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
             this.checkIsDateNum = 0;
         }
-        // 将元数据转换成目标色彩
         const colorArr = this.checkArround(data, this.calcOptions.spectraColor);
         // this.createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
         // 添加进渲染队列
         this.colorArr.unshift(colorArr);
-        // this.originData.unshift(data);
+        this.originData.unshift(data);
+        // console.log(this.originData.length);
         // checkIsDateNum 等于一个比 checkIsDateNumLimit小的数就可以了，这样checkIsDateNum在0到checkIsDateNumLimit循环的时候有一次对应上就赋值日期
         // this.dateData.unshift(this.setRightDateHtml(!this.checkIsDateNum));
         // this.update();
