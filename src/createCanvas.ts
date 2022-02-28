@@ -82,12 +82,6 @@ class Utils {
         const ss = SS < 10 ? '0' + SS : SS;
         return hh + ':' + mf + ':' + ss;
     }
-    setText({ textAlign = 'left', ctx, text = '', x = 0, y = 0 }: IwaterFallTextInput) {
-        ctx.save();
-        ctx.textAlign = textAlign;
-        ctx.fillText(text, x, y);
-        ctx.restore();
-    }
 }
 class CreateCanvas {
     dom: HTMLElement;
@@ -147,10 +141,14 @@ class CreateCanvas {
         this.dom.appendChild(canvasDom);
         // 
         let ctx = canvasDom.getContext("2d", { alpha: index === 1 }) as CanvasRenderingContext2D;
-        let text = new TestBlock(ctx, this.calcOptions);
-        this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr: [text] });
+        let drawArr = [];
+        drawArr.push(new TestBlock(ctx, this.calcOptions))
+        drawArr.push(new DrawLeftBlock(ctx, this.calcOptions))
+
+        this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr });
         // 测试
         // this.test()
+        this.draw()
     }
 }
 /**
@@ -217,7 +215,7 @@ class CalcOptions {
         leftBlock_Total: 0,
         leftBlock_title: 0,
         leftBlock_text: 30,
-        leftBlock_color: 20,
+        leftBlock_color: 10,
         rightBlock_Total: 0,
         centerBlock_Total: 0,
         ...userDefaultSetting
@@ -319,53 +317,49 @@ class DrawLeftBlock extends RFChartsDraw {
         super(ctx);
         this.ctx = ctx;
         this.calcOptions = calcOptions;
+        this.reset()
     }
     reset() {
         const { minMax, leftBarShowTimes, domHeight } = this.calcOptions.options;
         // 只有minmax和 leftBarShowTimes 都存在时 才继续
-        const times = minMax && leftBarShowTimes ? (minMax[1] - minMax[0]) / leftBarShowTimes : 0;
+        if (!(minMax && leftBarShowTimes)) return;
+        const times = (minMax[1] - minMax[0]) / leftBarShowTimes;
+        this.times = times;
         this.minMax = minMax || [0, 0];
         this.leftBarShowTimes = leftBarShowTimes || 0;
         if (times <= 0) return;
-        this.childHeightText = domHeight / times;
+        this.childHeightText = Math.floor(domHeight / times);
     }
     draw(): void {
         let { minMax, colorArr } = this.calcOptions.options;
         colorArr = colorArr || [];
-        const { domHeight } = this.calcOptions.options;
-        const { leftBlock_xStart, leftBlock_text_xStart, leftBlock_color_xStart, leftBlock_color_xEnd } = this.calcOptions.positions;
+        const { domHeight, leftBlock_color } = this.calcOptions.options;
+        const { leftBlock_text_xStart, leftBlock_color_xStart } = this.calcOptions.positions;
         const ctx = this.ctx;
         minMax = minMax || [0, 0];
+
+        ctx.save();
+        // 绘制左侧文本
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffffff";
         for (let i = 0; i < this.times; i++) {
-            this.setText({
-                ctx,
-                textAlign: 'center',
-                x: leftBlock_xStart,
-                y: this.childHeightText * i + 10,
-                text: (minMax[1] - i * this.leftBarShowTimes).toString()
-            });
+            ctx.fillText((minMax[1] - i * this.leftBarShowTimes).toString(), leftBlock_text_xStart + 12, this.childHeightText * i + 10);
         }
-        this.setText({
-            ctx,
-            textAlign: 'center',
-            x: leftBlock_text_xStart,
-            y: domHeight - 4,
-            text: minMax[0].toString()
-        });
+        ctx.fillText((minMax[0]).toString(), leftBlock_text_xStart + 12, domHeight - 4);
         // 生成色块范围
         const len = colorArr.length;
         const childHeight = domHeight / len;
         colorArr.forEach((ele, index) => {
-            ctx.save();
             ctx.fillStyle = ele;
             ctx.fillRect(
                 leftBlock_color_xStart,
                 index * childHeight,
-                leftBlock_color_xEnd,
+                leftBlock_color,
                 childHeight
             );
-            ctx.restore();
         });
+
+        ctx.restore();
     }
 
 }
