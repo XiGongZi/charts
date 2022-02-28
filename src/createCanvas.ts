@@ -1,4 +1,3 @@
-import { IwaterFallTextInput, IsetText } from './baseInterface';
 // 创建管理画布
 /**
  * 1. 分层
@@ -115,17 +114,6 @@ class CreateCanvas {
         })
         this.draw();
     }
-    test() {
-        this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
-            // 如果 canvasBase.canvas 不存在则跳下一个
-            if (!canvasBase.canvas) return;
-            // let ctx = canvasBase.canvas.getContext("2d");
-            // 如果 ctx 不存在则跳下一个
-            if (!canvasBase.ctx) return;
-            canvasBase.ctx.fillStyle = 'rgba(255,255,0,0.5)';
-            canvasBase.ctx.fillRect(canvasBase.canvas.width / 4, canvasBase.canvas.height / 4, canvasBase.canvas.width / 2, canvasBase.canvas.height / 2);
-        })
-    }
     // set canvas
     setCanvas(index: number = 1) {
         let canvasDom = document.createElement('canvas');
@@ -137,12 +125,12 @@ class CreateCanvas {
         // 初始化 设置canvas层级
         canvasDom.style.zIndex = index + '';
         // 初始化 设置canvas背景 测试用
-        canvasDom.style.backgroundColor = 'rgba(255,0,0,0.5)';
+        // canvasDom.style.backgroundColor = 'rgba(255,0,0,0.5)';
         this.dom.appendChild(canvasDom);
         // 
         let ctx = canvasDom.getContext("2d", { alpha: index === 1 }) as CanvasRenderingContext2D;
         let drawArr = [];
-        drawArr.push(new TestBlock(ctx, this.calcOptions))
+        // drawArr.push(new TestBlock(ctx, this.calcOptions))
         drawArr.push(new DrawLeftBlock(ctx, this.calcOptions))
 
         this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr });
@@ -362,39 +350,6 @@ class DrawLeftBlock extends RFChartsDraw {
         ctx.restore();
     }
 
-}
-class TestBlock extends RFChartsDraw {
-    calcOptions: CalcOptions;
-    constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions) {
-        super(ctx);
-        this.calcOptions = calcOptions;
-    }
-    draw(): void {
-        this.ctx.save();
-        this.ctx.fillStyle = 'red';
-        this.ctx.fillRect(this.calcOptions.positions.leftBlock_xStart, 0, this.calcOptions.positions.leftBlock_xEnd - this.calcOptions.positions.leftBlock_xStart, this.calcOptions.options.domHeight);
-        this.ctx.fillStyle = 'blue';
-        this.ctx.fillRect(this.calcOptions.positions.leftBlock_color_xStart, 0, this.calcOptions.positions.leftBlock_color_xEnd - this.calcOptions.positions.leftBlock_color_xStart, this.calcOptions.options.domHeight);
-        this.ctx.fillStyle = 'green';
-        this.ctx.fillRect(this.calcOptions.positions.leftBlock_text_xStart, 0, this.calcOptions.positions.leftBlock_text_xEnd - this.calcOptions.positions.leftBlock_text_xStart, this.calcOptions.options.domHeight);
-        this.ctx.fillStyle = '#880000';
-        this.ctx.fillRect(this.calcOptions.positions.centerBlock_xStart, 0, this.calcOptions.positions.centerBlock_xEnd - this.calcOptions.positions.centerBlock_xStart, this.calcOptions.options.domHeight);
-        this.ctx.fillStyle = '#888800';
-        this.ctx.fillRect(this.calcOptions.positions.rightBlock_xStart, 0, this.calcOptions.positions.rightBlock_xEnd - this.calcOptions.positions.rightBlock_xStart, this.calcOptions.options.domHeight);
-        this.ctx.restore();
-    }
-}
-class TestText extends RFChartsDraw {
-    constructor(ctx: CanvasRenderingContext2D) {
-        super(ctx);
-    }
-    draw() {
-        this.ctx.save();
-        console.log(111)
-        this.ctx.fillStyle = 'rgba(22,22,22,1)';
-        this.ctx.fillText('测试', 100, 100);
-        this.ctx.restore();
-    }
 }
 /**
  * manager
