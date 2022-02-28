@@ -19,6 +19,7 @@
 <script type="module">
     import {RFCharts} from "../src/createCanvas.ts"
     import {GetSocketData} from "../src/getSocketData.ts"
+    import {debounce} from "lodash"
 // 暂时只考虑waterfall
     let app0 = new RFCharts();
     let canvas = app0.init(document.getElementById('app2'));
@@ -37,9 +38,11 @@
         socket.stop();
     }
     // 当windows 尺寸变化时，调用canvas.resize() 重新设置canvas的尺寸
-    window.onresize = function() {
+    window.onresize = debounce(() => {
         canvas.resize();
-    }
+    },80)
+    // 当 windows尺寸变化时，且 持续200ms windows 尺寸不变化时，调用canvas.resize() 重新设置canvas的尺寸
+
     
 </script>
 
