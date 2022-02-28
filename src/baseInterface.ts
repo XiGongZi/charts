@@ -3,7 +3,7 @@
     用于给数组 @type IInputDataArr 每一项确定颜色  
     以接口的max和min为依据，范围内则使用对应的color  
  */
-export interface IselectArround {
+export interface ISpectraColor {
     max: number;
     min: number;
     color: string;
@@ -13,14 +13,7 @@ export interface IselectArround {
  */
 export interface Ictx {
     ctx: CanvasRenderingContext2D;
-}
-/**
-    用于给数组 @type IInputDataArr 每一项确定颜色  
-    每一项都有max min color属性  
-    以每一项的max和min为依据，范围内则使用对应的color  
- */
-type IselectArroundArr = Array<IselectArround>;
-/**
+}/**
     xy坐标
  */
 export interface IsetPosi {

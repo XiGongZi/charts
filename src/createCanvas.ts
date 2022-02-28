@@ -1,4 +1,4 @@
-import { IInputDataArr } from './baseInterface';
+import { ISpectraColor, IInputDataArr } from './baseInterface';
 // 创建管理画布
 /**
  * 1. 分层
@@ -110,7 +110,7 @@ class CreateCanvas {
         this.dom = element;
         this.calcOptions = calcOptions;
         // 设置dom宽高
-        this.resize();
+        // this.resize();
     }
     resetCalcOptions(calcOptions: CalcOptions) {
         this.calcOptions = calcOptions;
@@ -240,6 +240,7 @@ class CalcOptions {
         rightBlock_xStart: 0,
         rightBlock_xEnd: 0,
     };
+    spectraColor: ISpectraColor[] = [];
     dom: HTMLElement;
     constructor(element: HTMLElement) {
         this.dom = element;
@@ -250,7 +251,8 @@ class CalcOptions {
             ...this.options,
             ...options
         }
-        this.reset()
+        // 如果用户设置了参数 再reset
+        if (options) this.reset()
     }
     reset() {
         // 设置dom宽高
@@ -267,6 +269,31 @@ class CalcOptions {
         //     ...this.options,
         // }
         this.positions = this.getPosition();
+        this.genSpectraColor(this.options)
+        console.log(this.spectraColor)
+    }
+
+    /**
+     *
+     * @param param0 interface IglobalConfig
+     * @returns 设置幅度颜色，后续根据颜色生成幅度与每一层刻度
+     */
+    genSpectraColor({ minMax = [-20, 120], colorArr = [] }: IOptions) {
+        const spectraColor: ISpectraColor[] = [];
+        const min = minMax[0];
+        const max = minMax[1];
+        const arrLen = colorArr.length;
+        const reduce = (max - min) / arrLen;
+        colorArr.forEach((ele, index) => {
+            const Arrmax = index ? spectraColor[index - 1].min : max;
+            const Arrmin = index ? spectraColor[index - 1].min - reduce : max - reduce;
+            spectraColor.push({
+                max: Arrmax,
+                min: Arrmin,
+                color: ele
+            });
+        });
+        this.spectraColor = spectraColor;
     }
     getPosition() {
         // ----- 示例 -----
