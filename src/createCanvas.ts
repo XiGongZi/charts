@@ -152,13 +152,22 @@ class CreateCanvas {
     }
     // resize
     resize() {
-        this.calcOptions.reset()
+        this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
+            // 分层绘画 当前为单个canvas 层
+            canvasBase.drawArr.forEach((draw: RFChartsDraw) => {
+                draw.resize();
+            })
+        });
+    }
+    resetCanvasBase() {
+        // 重置dom属性
+        // this.calcOptions.reset()
         // 为每一个canvas同步新尺寸
         this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
             canvasBase.canvas.width = this.calcOptions.options.domWidth || 0;
             canvasBase.canvas.height = this.calcOptions.options.domHeight || 0;
         })
-        this.draw();
+        // this.draw();
     }
     // set canvas
     setCanvas(index: number = 1) {
@@ -185,7 +194,7 @@ class CreateCanvas {
         this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr });
         // 测试
         // this.test()
-        this.draw()
+        // this.draw()
     }
 }
 /**
@@ -229,6 +238,8 @@ class RFChartsManager {
         // this.draw();
     }
     resize(): void {
+        this.calcOptions.reset();
+        this.canvasClass.resetCanvasBase();
         this.canvasClass.resize();
         // this.canvasClass.draw();
     }
@@ -375,6 +386,7 @@ class RFChartsDraw extends Utils {
         this.ctx = ctx;
     }
     draw() { }
+    resize() { }
 }
 class WaterFallText implements IwaterFallTextInput {
     x: number = 0;
@@ -478,6 +490,21 @@ class DrawCenterWaterfall extends RFChartsDraw {
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
     }
+    resize(): void {
+        // this.reset();
+        // 渐变带全部重新设置
+        let originLineargradient: CanvasGradient[] = [];
+        const {
+            leftBlock_Total,
+        } = this.calcOptions.options;
+        const { centerBlock_xEnd } = this.calcOptions.positions;
+        this.dataOptions.colorArr.forEach((ele, index) => {
+            const lineargradient = this.createLinearGradient(leftBlock_Total, index, centerBlock_xEnd, index, this.ctx, ele);
+            originLineargradient.push(lineargradient);
+        });
+        this.dataOptions.resetOriginLineargradient(originLineargradient);
+        this.draw();
+    }
     /**
      * @name renderCenterImg
      * @description 渲染中间区域内容
@@ -541,6 +568,10 @@ class DrawLeftBlock extends RFChartsDraw {
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.reset()
+    }
+    resize(): void {
+        this.reset();
+        this.draw();
     }
     reset() {
         const { minMax, leftBarShowTimes, domHeight } = this.calcOptions.options;
@@ -610,6 +641,9 @@ class DataOptions extends Utils {
         // this.ctx = ctx;
         this.calcOptions = options;
     }
+    resetOriginLineargradient(originLineargradient: CanvasGradient[]) {
+        this.originLineargradient = originLineargradient;
+    }
     setOriginLineargradient(lineargradient: CanvasGradient) {
         this.originLineargradient.unshift(lineargradient);
     }
@@ -618,7 +652,7 @@ class DataOptions extends Utils {
     }
     commit(data: IInputDataArr) {
         if (!Array.isArray(data)) throw new Error('commit function need Array!');
-        data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
+        // data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
         const { domHeight } = this.calcOptions.options;
         this.checkIsNeedPopData(this.dateArr, domHeight);
         this.checkIsNeedPopData(this.originData, domHeight);
