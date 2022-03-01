@@ -400,6 +400,9 @@ class WaterFallText implements IwaterFallTextInput {
         this.ctx = ctx;
         this.textAlign = textAlign;
     }
+    resetX(x: number) {
+        this.x = x;
+    }
     set({ x = 0, y = 0, text = 'left' }: IsetText) {
         this.x = x;
         this.y = y;
@@ -432,6 +435,17 @@ class DrawRightTimeText extends RFChartsDraw {
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
+    }
+    resize(): void {
+        // 暂时只考虑横向拉伸
+        // 需要重置x
+        let newX = this.calcOptions.positions.rightBlock_xStart + 4;
+        this.dataOptions.dateArr.forEach(ele => {
+            if (ele) {
+                ele.x = newX;
+            }
+        })
+        this.draw()
     }
     /**
      * @name setRightDateHtml
