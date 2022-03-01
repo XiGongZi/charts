@@ -226,6 +226,7 @@ class RFChartsManager {
         this.calcOptions = new CalcOptions(element);
         this.dataOptions = new DataOptions(this.calcOptions);
         this.canvasClass = new CreateCanvas(element, this.calcOptions, this.dataOptions);
+        this.canvasClass.setCanvas();
     }
     // 设置配置
     setOptions(options: IUserSetOptions) {
@@ -234,7 +235,8 @@ class RFChartsManager {
         //     ...options
         // }
         this.calcOptions.setOptions(options);
-        this.canvasClass.setCanvas();
+        this.resize();
+        // this.canvasClass.setCanvas();
         // this.draw();
     }
     resize(): void {
