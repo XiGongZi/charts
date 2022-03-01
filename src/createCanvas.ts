@@ -382,10 +382,8 @@ class CalcOptions {
     }
 }
 class RFChartsDraw extends Utils {
-    ctx: CanvasRenderingContext2D;
-    constructor(ctx: CanvasRenderingContext2D) {
+    constructor() {
         super();
-        this.ctx = ctx;
     }
     draw() { }
     resize() { }
@@ -433,7 +431,7 @@ class DrawRightTimeText extends RFChartsDraw {
     calcOptions: CalcOptions;
     dataOptions: DataOptions;
     constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions, dataOptions: DataOptions) {
-        super(ctx);
+        super();
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
@@ -501,7 +499,7 @@ class DrawCenterWaterfall extends RFChartsDraw {
     dataOptions: DataOptions;
     // originLineargradient: CanvasGradient[] = [];
     constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions, dataOptions: DataOptions) {
-        super(ctx);
+        super();
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
@@ -580,7 +578,7 @@ class DrawLeftBlock extends RFChartsDraw {
     childHeightText: number = 0;
     leftBarShowTimes: number = 0;
     constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions) {
-        super(ctx);
+        super();
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.reset()
