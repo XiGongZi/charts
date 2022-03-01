@@ -379,63 +379,37 @@ class DrawCenterWaterfall extends RFChartsDraw {
     ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
     dataOptions: DataOptions;
-    originLineargradient: CanvasGradient[] = [];
+    // originLineargradient: CanvasGradient[] = [];
     constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions, dataOptions: DataOptions) {
         super(ctx);
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
-
-        // let line = ctx.createLinearGradient(0, 0, 1000, 0);
-        // line.addColorStop(0, '#fff');
-        // line.addColorStop(1, '#000');
-        // ctx.fillStyle = line;
-        // ctx.fillRect(0, 0, 1000, 1000);
     }
     /**
      * @name renderCenterImg
      * @description 渲染中间区域内容
      */
     draw() {
-        // console.log("DrawCenterWaterfall!")
         // update
         const ctx = this.ctx;
-        // console.log(this.globalConfig);
-        // console.log(this.originColor);
         const {
             leftBlock_Total,
-            domHeight,
-
             centerBlock_Total
         } = this.calcOptions.options;
         const rightTextStartX = this.calcOptions.positions.rightBlock_xStart || 0;
         const { colorArr } = this.dataOptions;
-        const { centerBlock_xStart, rightBlock_xStart } = this.calcOptions.positions
-        // console.log(this.dataOptions.originData)
-        // this.ctx.clearRect(
-        //     leftBlock_Total,
-        //     0,
-        //     rightTextStartX,
-        //     domHeight
-        // );
-
-
         colorArr.forEach((ele, index) => {
-            // let line = ctx.createLinearGradient(0, 0, 1000, 0);
-            // line.addColorStop(0, '#fff');
-            // line.addColorStop(1, '#000');
-            // ctx.fillStyle = line;
-            // ctx.fillRect(0, 0, 1000, 1000);
             ctx.save();
             const y = index;
             // 右侧文本开始x坐标即中间画布的结束x坐标
             let lineargradient: CanvasGradient;
             // 将 lineargradient 存储起来避免每次都计算一遍
-            if (index && this.originLineargradient[index]) {
-                lineargradient = this.originLineargradient[index];
+            if (index && this.dataOptions.originLineargradient[index]) {
+                lineargradient = this.dataOptions.originLineargradient[index];
             } else {
                 lineargradient = this.createLinearGradient(leftBlock_Total, y, rightTextStartX, y, ctx, ele);
-                this.originLineargradient.unshift(lineargradient);
+                this.dataOptions.setOriginLineargradient(lineargradient);
                 // this.checkIsNeedPopData(this.originLineargradient, domHeight);
             }
             // lineargradient = this.createLinearGradient(leftBlock_Total, y, rightTextStartX || 0, y, ctx, ele);
@@ -448,8 +422,6 @@ class DrawCenterWaterfall extends RFChartsDraw {
             );
             ctx.restore();
         });
-
-        this.checkIsNeedPopData(this.originLineargradient, domHeight);
     }
     // 画矩形
     private createLinearGradient(x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D, ele: string[]) {
@@ -545,7 +517,9 @@ class DataOptions extends Utils {
         // this.ctx = ctx;
         this.calcOptions = options;
     }
-
+    setOriginLineargradient(lineargradient: CanvasGradient) {
+        this.originLineargradient.unshift(lineargradient);
+    }
     commit(data: IInputDataArr) {
         if (!Array.isArray(data)) throw new Error('commit function need Array!');
         data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
@@ -563,6 +537,7 @@ class DataOptions extends Utils {
         //     this.originLineargradient.pop();
         // }
         this.checkIsNeedPopData(this.originData, domHeight);
+        this.checkIsNeedPopData(this.colorArr, domHeight);
         this.checkIsNeedPopData(this.originLineargradient, domHeight);
         // 将元数据转换成目标色彩
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
