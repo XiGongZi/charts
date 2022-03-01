@@ -2,7 +2,7 @@
  * @Author: WangAnCheng 1079688386@qq.com
  * @Date: 2021-12-09 10:39:32
  * @Last Modified by: WangAnCheng 1079688386@qq.com
- * @Last Modified time: 2022-02-25 14:54:21
+ * @Last Modified time: 2022-02-28 16:32:34
  */
 // import { ObjectPool } from "./utils";
 interface IglobalConfig {

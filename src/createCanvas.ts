@@ -14,7 +14,7 @@ const userDefaultSetting: IUserSetOptions = {
     /**
      * 右侧文本开始坐标
      */
-    rightTextStartX: 0,
+    rightTextStartX: 1000,
     /**
      * 左侧显示数据，y轴相邻数的差
      */
@@ -385,6 +385,12 @@ class DrawCenterWaterfall extends RFChartsDraw {
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
+
+        // let line = ctx.createLinearGradient(0, 0, 1000, 0);
+        // line.addColorStop(0, '#fff');
+        // line.addColorStop(1, '#000');
+        // ctx.fillStyle = line;
+        // ctx.fillRect(0, 0, 1000, 1000);
     }
     /**
      * @name renderCenterImg
@@ -399,10 +405,12 @@ class DrawCenterWaterfall extends RFChartsDraw {
         const {
             leftBlock_Total,
             domHeight,
+
             centerBlock_Total
         } = this.calcOptions.options;
-        const rightTextStartX = this.calcOptions.options.rightTextStartX || 0;
+        const rightTextStartX = this.calcOptions.positions.rightBlock_xStart || 0;
         const { colorArr } = this.dataOptions;
+        const { centerBlock_xStart, rightBlock_xStart } = this.calcOptions.positions
         // console.log(this.dataOptions.originData)
         // this.ctx.clearRect(
         //     leftBlock_Total,
@@ -411,9 +419,14 @@ class DrawCenterWaterfall extends RFChartsDraw {
         //     domHeight
         // );
 
+
         colorArr.forEach((ele, index) => {
+            // let line = ctx.createLinearGradient(0, 0, 1000, 0);
+            // line.addColorStop(0, '#fff');
+            // line.addColorStop(1, '#000');
+            // ctx.fillStyle = line;
+            // ctx.fillRect(0, 0, 1000, 1000);
             ctx.save();
-            // console.log(ele)
             const y = index;
             // 右侧文本开始x坐标即中间画布的结束x坐标
             let lineargradient: CanvasGradient;
@@ -423,6 +436,7 @@ class DrawCenterWaterfall extends RFChartsDraw {
             } else {
                 lineargradient = this.createLinearGradient(leftBlock_Total, y, rightTextStartX, y, ctx, ele);
                 this.originLineargradient.unshift(lineargradient);
+                // this.checkIsNeedPopData(this.originLineargradient, domHeight);
             }
             // lineargradient = this.createLinearGradient(leftBlock_Total, y, rightTextStartX || 0, y, ctx, ele);
             ctx.fillStyle = lineargradient;
@@ -432,17 +446,6 @@ class DrawCenterWaterfall extends RFChartsDraw {
                 centerBlock_Total,
                 1
             );
-            // ele.forEach((ele1, index1) => {
-            //     ctx.save();
-            //     ctx.fillStyle = ele1;
-            //     ctx.fillRect(
-            //         leftBlock_Total + index1,
-            //         y,
-            //         1,
-            //         1
-            //     );
-            //     ctx.restore();
-            // })
             ctx.restore();
         });
 

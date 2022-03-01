@@ -25,11 +25,13 @@
     let canvas = app0.init(document.getElementById('app2'));
     canvas.setOptions();
     // canvas.setCanvas();
+    // const color = [0,100]
+    // canvas.update(color)
     // 绑定start事件 执行resize方法
     let socket = new GetSocketData();
     window.start = function() {
         socket.start((x,y) => {
-            // console.log(x,y);
+            // console.log(y);
             // flow.update(x,y);
             canvas.update(y);
         })
