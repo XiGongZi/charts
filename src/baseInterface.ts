@@ -20,6 +20,7 @@ export interface IsetPosi {
     x?: number;
     y?: number;
 }
+
 /**
  * ctx.fillText 需要用到的参数
  */

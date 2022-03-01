@@ -1,4 +1,4 @@
-import { IInputDataColorArr, ISpectraColor, IInputDataArr } from './baseInterface';
+import { IwaterFallTextInput, IsetText, IInputDataColorArr, ISpectraColor, IInputDataArr } from './baseInterface';
 // 创建管理画布
 /**
  * 1. 分层
@@ -67,7 +67,7 @@ interface ICanvasBase {
     drawArr: RFChartsDraw[]
 }
 
-type TcheckIsNeedPopData = IInputDataArr[] | CanvasGradient[] | IInputDataColorArr[]
+type TcheckIsNeedPopData = IInputDataArr[] | Array<WaterFallText | null> | CanvasGradient[] | IInputDataColorArr[]
 class Utils {
     constructor() { }
     checkIsNeedPopData(arr: TcheckIsNeedPopData, limit: number) {
@@ -180,6 +180,8 @@ class CreateCanvas {
         drawArr.push(new DrawLeftBlock(ctx, this.calcOptions))
         // 中间瀑布图
         drawArr.push(new DrawCenterWaterfall(ctx, this.calcOptions, this.dataOptions))
+        // 右侧时间文本
+        drawArr.push(new DrawRightTimeText(ctx, this.calcOptions, this.dataOptions))
         this.canvasDomArr.push({ canvas: canvasDom, ctx, drawArr });
         // 测试
         // this.test()
@@ -374,6 +376,96 @@ class RFChartsDraw extends Utils {
     }
     draw() { }
 }
+class WaterFallText implements IwaterFallTextInput {
+    x: number = 0;
+    y: number = 0;
+    step;
+    ctx: CanvasRenderingContext2D = CanvasRenderingContext2D.prototype;
+    text = "";
+    textAlign;
+    constructor({ ctx, step = 1, textAlign = "left" }: IwaterFallTextInput) {
+        this.step = step;
+        this.ctx = ctx;
+        this.textAlign = textAlign;
+    }
+    set({ x = 0, y = 0, text = 'left' }: IsetText) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+    }
+    draw() {
+        this.y = this.y + this.step;
+        this.fillText();
+    }
+    fillText() {
+        this.ctx.save();
+        this.ctx.textAlign = this.textAlign;
+        this.ctx.fillStyle = "#fff";
+        this.ctx.fillText(this.text, this.x, this.y);
+        this.ctx.restore();
+    }
+    update(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+        this.fillText();
+    }
+}
+// 绘制右侧时间文本
+class DrawRightTimeText extends RFChartsDraw {
+    ctx: CanvasRenderingContext2D;
+    calcOptions: CalcOptions;
+    dataOptions: DataOptions;
+    constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions, dataOptions: DataOptions) {
+        super(ctx);
+        this.ctx = ctx;
+        this.calcOptions = calcOptions;
+        this.dataOptions = dataOptions;
+    }
+    /**
+     * @name setRightDateHtml
+     * @param {bool} bool 布尔值，是否创建 WaterFallText对象去渲染
+     * @returns {null || WaterFallText} 根据bool值决定返回空或者WaterFallText对象
+     * @description 根据布尔值创建并返回WaterFallText.draw()调用
+     */
+    private setRightDateHtml(bool: boolean): WaterFallText | null {
+        // console.log(bool);
+        const { rightBlock_xStart } = this.calcOptions.positions;
+        if (bool) {
+            const date = this.getDate();
+            const app = new WaterFallText({
+                step: 1,
+                ctx: this.ctx,
+            });
+            app.set({
+                x: rightBlock_xStart + 4,
+                // ctx: this.ctx,
+                y: 0,
+                text: date
+            })
+            return app;
+        } else {
+            return null;
+        }
+    }
+    draw(): void {
+        const { rightBlock_Total, domHeight } = this.calcOptions.options;
+        const { rightBlock_xStart } = this.calcOptions.positions;
+
+        this.ctx.clearRect(
+            rightBlock_xStart,
+            0,
+            rightBlock_Total,
+            domHeight
+        );
+        // redraw text
+        this.dataOptions.dateArr.forEach((ele) => {
+            if (ele) {
+                ele.draw();
+            }
+        });
+        this.dataOptions.setDateWaterText(this.setRightDateHtml(!this.dataOptions.checkIsDateNum));
+    }
+}
 // 绘制中间瀑布图
 class DrawCenterWaterfall extends RFChartsDraw {
     ctx: CanvasRenderingContext2D;
@@ -507,7 +599,8 @@ class DataOptions extends Utils {
     originLineargradient: CanvasGradient[] = [];
     // 颜色数组
     colorArr: IInputDataColorArr[] = [];
-    checkIsDateNum = 0;
+    dateArr: Array<WaterFallText | null> = [];
+    checkIsDateNum = -1;
     /**
      * 右侧时间文本间隔多少个渲染一次(当前70)
      */
@@ -520,34 +613,28 @@ class DataOptions extends Utils {
     setOriginLineargradient(lineargradient: CanvasGradient) {
         this.originLineargradient.unshift(lineargradient);
     }
+    setDateWaterText(date: WaterFallText | null) {
+        this.dateArr.unshift(date);
+    }
     commit(data: IInputDataArr) {
         if (!Array.isArray(data)) throw new Error('commit function need Array!');
         data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
-        const len = this.originData.length;
         const { domHeight } = this.calcOptions.options;
-        // const {divHeight} = this.options;
-        // let len = this.originData.length;
-        // console.log(this.calcOptions.options.domHeight)
-        // 这里加20是为了让右侧时间文本下落到最后时能超出显示区域再移除
-        // if (len >= this.calcOptions.options.domHeight + 20) {
-        //     // 如果长度超了，删除数组最后元素
-        //     // this.originData.pop();
-        //     // this.originData.pop();
-        //     // this.dateData.pop();
-        //     this.originLineargradient.pop();
-        // }
+        this.checkIsNeedPopData(this.dateArr, domHeight);
         this.checkIsNeedPopData(this.originData, domHeight);
         this.checkIsNeedPopData(this.colorArr, domHeight);
         this.checkIsNeedPopData(this.originLineargradient, domHeight);
         // 将元数据转换成目标色彩
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
-            this.checkIsDateNum = 0;
+            this.checkIsDateNum = -1;
         }
+        // console.log(this.checkIsDateNum)
         const colorArr = this.checkArround(data, this.calcOptions.spectraColor);
         // this.createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
         // 添加进渲染队列
         this.colorArr.unshift(colorArr);
         this.originData.unshift(data);
+        // this.dateArr.unshift(this.setRightDateHtml(!this.checkIsDateNum));
         // console.log(this.originData.length);
         // checkIsDateNum 等于一个比 checkIsDateNumLimit小的数就可以了，这样checkIsDateNum在0到checkIsDateNumLimit循环的时候有一次对应上就赋值日期
         // this.dateData.unshift(this.setRightDateHtml(!this.checkIsDateNum));
