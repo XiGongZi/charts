@@ -10,7 +10,7 @@ const userDefaultSetting: IUserSetOptions = {
     /**
      * y轴的范围
      */
-    minMax: [-20, 120],
+    minMax: [-20, 100],
     /**
      * 右侧文本开始坐标
      */
@@ -23,22 +23,22 @@ const userDefaultSetting: IUserSetOptions = {
      * 左侧显示的颜色梯度示例
      */
     colorArr: [
-        '#FF0000',
-        '#FF0000',
-        '#FF3700',
-        '#FF6E00',
-        '#FFA500',
-        '#FFDC00',
-        '#EBFF00',
-        '#CCFF00',
-        '#8CFF00',
-        '#65FF00',
-        '#0FFF00',
-        '#00FFBF',
-        '#00FAFF',
-        '#00C3FF',
-        '#008BFF',
-        '#0000FF'
+        "#FF0000",
+        "#FF3700",
+        "#FF6E00",
+        "#FFA500",
+        "#FFDC00",
+        "#EBFF00",
+        "#CCFF00",
+        "#8CFF00",
+        "#65FF00",
+        "#0FFF00",
+        "#00FF85",
+        "#00FFBF",
+        "#00FAFF",
+        "#00C3FF",
+        "#008BFF",
+        "#0000FF",
     ]
 }
 interface IUserSetOptions {
