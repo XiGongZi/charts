@@ -4,7 +4,7 @@
  * @Last Modified by: WangAnCheng 1079688386@qq.com
  * @Last Modified time: 2021-12-29 13:42:21
  */
-import WaterFall from "./waterfall";
+import { RFCharts } from "./createCanvas";
 export default {
-  WaterFall,
+    RFCharts,
 };
