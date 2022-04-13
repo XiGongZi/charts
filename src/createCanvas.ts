@@ -11,6 +11,11 @@ const userDefaultSetting: IUserSetOptions = {
      * y轴的范围
      */
     minMax: [-20, 100],
+
+    /**
+     * 是否显示右侧文本
+     */
+    showRightText: true,
     /**
      * 右侧文本开始坐标
      */
@@ -45,6 +50,7 @@ interface IUserSetOptions {
     // divHeight?: number;
     minMax?: [number, number];
     leftBarShowTimes?: number;
+    showRightText?: boolean;
     colorArr?: string[]
     rightTextStartX?: number;
 }
@@ -459,7 +465,9 @@ class DrawRightTimeText extends RFChartsDraw {
     private setRightDateHtml(bool: boolean): WaterFallText | null {
         // console.log(bool);
         const { rightBlock_xStart } = this.calcOptions.positions;
-        if (bool) {
+        // 是否显示右侧文本 showRightText
+        let isShow = this.calcOptions.options.showRightText;
+        if (isShow && bool) {
             const date = this.getDate();
             const app = new WaterFallText({
                 step: 1,
