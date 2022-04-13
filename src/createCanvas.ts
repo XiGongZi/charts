@@ -166,6 +166,8 @@ class CreateCanvas {
         this.canvasDomArr.forEach((canvasBase: ICanvasBase) => {
             canvasBase.canvas.width = this.calcOptions.options.domWidth || 0;
             canvasBase.canvas.height = this.calcOptions.options.domHeight || 0;
+            canvasBase.canvas.style.height =
+                (this.calcOptions.options.domHeight || 0) + "px";
         })
         // this.draw();
     }
@@ -175,6 +177,7 @@ class CreateCanvas {
         // 初始化 设置canvas宽高
         canvasDom.width = this.calcOptions.options.domWidth || 0;
         canvasDom.height = this.calcOptions.options.domHeight || 0;
+        canvasDom.style.height = (this.calcOptions.options.domHeight || 0) + "px";
         // 初始化 设置canvas相对定位
         canvasDom.style.position = 'absolute';
         // 初始化 设置canvas层级
