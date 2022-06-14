@@ -87,11 +87,11 @@ type TcheckIsNeedPopData = IInputDataArr[] | Array<WaterFallText | null> | Canva
 
 class Utils {
     constructor() { }
-    checkIsNeedPopData(arr: TcheckIsNeedPopData, limit: number) {
+    static checkIsNeedPopData(arr: TcheckIsNeedPopData, limit: number) {
         if (arr.length >= limit + 20) arr.pop()
     }
     // 从源数据中过滤出目标数量，尽量平均
-    filter({ target = 300, data = [] }: { target: number; data: IInputDataArr }): IInputDataArr {
+    static filter({ target = 300, data = [] }: { target: number; data: IInputDataArr }): IInputDataArr {
         const len = data.length;
         // 小于等于target
         if (len <= target) return data;
@@ -111,7 +111,7 @@ class Utils {
     }
 
     // 给定数组数值，输出对象的范围
-    checkArround(arr: IInputDataArr = [], arrColor: ISpectraColor[] = []): IInputDataColorArr {
+    static checkArround(arr: IInputDataArr = [], arrColor: ISpectraColor[] = []): IInputDataColorArr {
         const res: IInputDataColorArr = [];
         // 算法优化
         // O(mn)  =>
@@ -132,7 +132,7 @@ class Utils {
         });
         return res;
     }
-    getDate(): string {
+    static getDate(): string {
         const datetime = new Date();
         const hh = datetime.getHours();
         const MF = datetime.getMinutes();
@@ -401,12 +401,9 @@ class CalcOptions {
         }
     }
 }
-class RFChartsDraw extends Utils {
-    constructor() {
-        super();
-    }
-    draw() { }
-    resize() { }
+interface RFChartsDraw {
+    draw: () => void;
+    resize: () => void;
 }
 class WaterFallText implements IwaterFallTextInput {
     x: number = 0;
@@ -446,12 +443,11 @@ class WaterFallText implements IwaterFallTextInput {
     }
 }
 // 绘制右侧时间文本
-class DrawRightTimeText extends RFChartsDraw {
+class DrawRightTimeText implements RFChartsDraw {
     ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
     dataOptions: DataOptions;
     constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions, dataOptions: DataOptions) {
-        super();
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
@@ -479,7 +475,7 @@ class DrawRightTimeText extends RFChartsDraw {
         // 是否显示右侧文本 showRightText
         let isShow = this.calcOptions.options.showRightText;
         if (isShow && bool) {
-            const date = this.getDate();
+            const date = Utils.getDate();
             const app = new WaterFallText({
                 step: 1,
                 ctx: this.ctx,
@@ -515,13 +511,12 @@ class DrawRightTimeText extends RFChartsDraw {
     }
 }
 // 绘制中间瀑布图
-class DrawCenterWaterfall extends RFChartsDraw {
+class DrawCenterWaterfall implements RFChartsDraw {
     ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
     dataOptions: DataOptions;
     // originLineargradient: CanvasGradient[] = [];
     constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions, dataOptions: DataOptions) {
-        super();
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.dataOptions = dataOptions;
@@ -592,7 +587,7 @@ class DrawCenterWaterfall extends RFChartsDraw {
     }
 }
 // 左侧文本与图例
-class DrawLeftBlock extends RFChartsDraw {
+class DrawLeftBlock implements RFChartsDraw {
     ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
     times: number = 1;
@@ -600,7 +595,6 @@ class DrawLeftBlock extends RFChartsDraw {
     childHeightText: number = 0;
     leftBarShowTimes: number = 0;
     constructor(ctx: CanvasRenderingContext2D, calcOptions: CalcOptions) {
-        super();
         this.ctx = ctx;
         this.calcOptions = calcOptions;
         this.reset()
@@ -656,7 +650,7 @@ class DrawLeftBlock extends RFChartsDraw {
 
 }
 // 做数据转换与存储
-class DataOptions extends Utils {
+class DataOptions {
     // ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
     // 元数据
@@ -673,7 +667,6 @@ class DataOptions extends Utils {
      */
     checkIsDateNumLimit = 70;
     constructor(options: CalcOptions) {
-        super();
         // this.ctx = ctx;
         this.calcOptions = options;
     }
@@ -690,16 +683,16 @@ class DataOptions extends Utils {
         if (!Array.isArray(data)) throw new Error('commit function need Array!');
         // data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
         const { domHeight } = this.calcOptions.options;
-        this.checkIsNeedPopData(this.dateArr, domHeight);
-        this.checkIsNeedPopData(this.originData, domHeight);
-        this.checkIsNeedPopData(this.colorArr, domHeight);
-        this.checkIsNeedPopData(this.originLineargradient, domHeight);
+        Utils.checkIsNeedPopData(this.dateArr, domHeight);
+        Utils.checkIsNeedPopData(this.originData, domHeight);
+        Utils.checkIsNeedPopData(this.colorArr, domHeight);
+        Utils.checkIsNeedPopData(this.originLineargradient, domHeight);
         // 将元数据转换成目标色彩
         if (this.checkIsDateNum >= this.checkIsDateNumLimit) {
             this.checkIsDateNum = -1;
         }
         // console.log(this.checkIsDateNum)
-        const colorArr = this.checkArround(data, this.calcOptions.spectraColor);
+        const colorArr = Utils.checkArround(data, this.calcOptions.spectraColor);
         // this.createLinearGradient(leftBarWidth, y, rightTextStartX, y, ctx, ele);
         // 添加进渲染队列
         this.colorArr.unshift(colorArr);
@@ -712,23 +705,3 @@ class DataOptions extends Utils {
         this.checkIsDateNum++;
     }
 }
-/**
- * manager
- *      canvasArr
- *          canvasInfo
- *          DrawArr
- *              Text
- *              Line
- *              colorBlock
- * 
- *      dataControl
- *
- * 初始化 --》 计算对应位置 --》 生成draw对象 --》 绘制
- * commit数据 --》 更新draw对象 --》 绘制
- * 
- * dataControl
- * 输入: 元数据，number[]
- * 输出: 颜色数组，color-string[] 元数据 number[]
- * 
- * 生成获取socket方法
- */
