@@ -1,5 +1,6 @@
-import { ObjectPoolItemAbstract, ObjectPool } from "./core/index";
-/*
+import { ObjectPoolManager, ObjectPoolManagerAbstract, ObjectPoolItemAbstract, ObjectPool } from "./core/index";
+
+/**
 class Test extends ObjectPoolItemAbstract {
     data: any;
     constructor() {
@@ -13,5 +14,5 @@ class Test extends ObjectPoolItemAbstract {
         return new Test();
     }
 }
-*/
-export { ObjectPoolItemAbstract, ObjectPool };
+ */
+export { ObjectPoolManager, ObjectPoolManagerAbstract, ObjectPoolItemAbstract, ObjectPool };
