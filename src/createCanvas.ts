@@ -1,3 +1,4 @@
+// import { ObjectPoolItemAbstract, ObjectPool } from "./libs/objectPool";
 import { IwaterFallTextInput, IsetText, IInputDataColorArr, ISpectraColor, IInputDataArr } from './baseInterface';
 // 创建管理画布
 /**
@@ -74,6 +75,16 @@ interface ICanvasBase {
 }
 
 type TcheckIsNeedPopData = IInputDataArr[] | Array<WaterFallText | null> | CanvasGradient[] | IInputDataColorArr[]
+/**
+*
+* @description 工具类 
+*
+* @date 2022-06-14
+*
+* @author WangAnCheng
+*
+*/
+
 class Utils {
     constructor() { }
     checkIsNeedPopData(arr: TcheckIsNeedPopData, limit: number) {

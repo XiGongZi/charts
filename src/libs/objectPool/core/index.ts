@@ -1,29 +1,29 @@
-export abstract class ObjectPoolAbstract {
+export abstract class ObjectPoolItemAbstract {
     data: any;
     constructor() { }
-    abstract resetObjectPoolItem(data: any): ObjectPoolAbstract;
-    abstract getNewObjectPoolItem(): ObjectPoolAbstract;
+    abstract resetObjectPoolItem(data: any): ObjectPoolItemAbstract;
+    abstract getNewObjectPoolItem(): ObjectPoolItemAbstract;
 }
 export class ObjectPool {
-    limit = 10;
-    originObj: ObjectPoolAbstract;
-    pool: ObjectPoolAbstract[] = [];
-    constructor(originObj: ObjectPoolAbstract, limit?: number) {
+    private limit = 10;
+    private originObj: ObjectPoolItemAbstract;
+    private pool: ObjectPoolItemAbstract[] = [];
+    constructor(originObj: ObjectPoolItemAbstract, limit?: number) {
         this.originObj = originObj;
         if (limit) this.limit = limit;
         this.pool = [originObj];
     }
-    getNewObj(data: any) {
+    private getNewObj(data: any) {
         return this.originObj.getNewObjectPoolItem().resetObjectPoolItem(data);
     }
-    create(data: any): ObjectPoolAbstract {
+    public create(data: any): ObjectPoolItemAbstract {
         return this.pool.pop()?.resetObjectPoolItem(data) || this.getNewObj(data);
     }
-    recycle(item: ObjectPoolAbstract) {
+    public recycle(item: ObjectPoolItemAbstract) {
         if (this.pool.length > this.limit) return;
         this.pool.push(item);
     }
-    recycleLists(items: ObjectPoolAbstract[]) {
+    public recycleLists(items: ObjectPoolItemAbstract[]) {
         items.forEach(item => this.recycle(item));
     }
 }
