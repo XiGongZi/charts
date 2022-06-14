@@ -4,3 +4,4 @@
 .parcel-cache
 /dist/
 /public/
+pnpm-lock.yaml
