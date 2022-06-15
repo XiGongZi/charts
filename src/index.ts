@@ -5,6 +5,6 @@
  * @Last Modified time: 2022-06-15 21:57:16
  */
 import { RFCharts } from "./core/RFCharts";
-export default {
+export {
     RFCharts,
 };
