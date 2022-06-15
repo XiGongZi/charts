@@ -1,11 +1,11 @@
-abstract class DataOptions {
-    calcOptions: CalcOptions = CalcOptions.constructor();
+interface DataOptions {
+    calcOptions: CalcOptions;
     // 元数据
-    originData: IInputDataArr[] = [];
+    originData: IInputDataArr[];
     // 设置属性
-    setOptions(): void { }
+    setOptions: () => void;
     // 重置属性
-    reset(): void { }
+    reset: () => void;
     // 计算相应位置
-    getPosition(): void { }
+    getPosition: () => void;
 }
