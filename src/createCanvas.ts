@@ -1,5 +1,3 @@
-// import { ObjectPoolItemAbstract, ObjectPool } from "./libs/objectPool";
-import { IwaterFallTextInput, IsetText, IInputDataColorArr, ISpectraColor, IInputDataArr } from './baseInterface';
 // 创建管理画布
 /**
  * 1. 分层
@@ -47,34 +45,8 @@ const userDefaultSetting: IUserSetOptions = {
         "#0000FF",
     ]
 }
-interface IUserSetOptions {
-    // divHeight?: number;
-    minMax?: [number, number];
-    leftBarShowTimes?: number;
-    showRightText?: boolean;
-    colorArr?: string[]
-    rightTextStartX?: number;
-}
-interface IOptions extends IUserSetOptions {
-    domWidth: number;
-    domHeight: number;
-    // 瀑布图左侧总大小
-    leftBlock_Total: number;
-    leftBlock_title: number;
-    leftBlock_text: number,
-    leftBlock_color: number,
-    // 瀑布图右侧总大小
-    rightBlock_Total: number;
-    // 瀑布图总大小
-    centerBlock_Total: number;
-}
-interface ICanvasBase {
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    drawArr: RFChartsDraw[]
-}
 
-type TcheckIsNeedPopData = IInputDataArr[] | Array<WaterFallText | null> | CanvasGradient[] | IInputDataColorArr[]
+type TcheckIsNeedPopData = Array<number>[] | Array<WaterFallText | null> | CanvasGradient[] | Array<string>[]
 /**
 *
 * @description 工具类 
@@ -91,7 +63,7 @@ class Utils {
         if (arr.length >= limit + 20) arr.pop()
     }
     // 从源数据中过滤出目标数量，尽量平均
-    static filter({ target = 300, data = [] }: { target: number; data: IInputDataArr }): IInputDataArr {
+    static filter({ target = 300, data = [] }: { target: number; data: Array<number> }): Array<number> {
         const len = data.length;
         // 小于等于target
         if (len <= target) return data;
@@ -101,7 +73,7 @@ class Utils {
          * 然后取每一个格子内的最后一个整数，作为下标去取源数据对应的像素颜色
          */
         const step = len / target;
-        const arr: IInputDataArr = [];
+        const arr: Array<number> = [];
         let num = step;
         for (let i = 0; i < target; i++) {
             arr.push(data[Math.floor(num) - 1]);
@@ -111,8 +83,8 @@ class Utils {
     }
 
     // 给定数组数值，输出对象的范围
-    static checkArround(arr: IInputDataArr = [], arrColor: ISpectraColor[] = []): IInputDataColorArr {
-        const res: IInputDataColorArr = [];
+    static checkArround(arr: Array<number> = [], arrColor: ISpectraColor[] = []): Array<string> {
+        const res: Array<string> = [];
         // 算法优化
         // O(mn)  =>
         arr.forEach((ele) => {
@@ -270,18 +242,6 @@ class RFChartsManager {
         this.canvasClass.draw();
     }
 }
-interface Iposition {
-    leftBlock_xStart: number;
-    leftBlock_xEnd: number;
-    leftBlock_text_xStart: number;
-    leftBlock_text_xEnd: number;
-    leftBlock_color_xStart: number;
-    leftBlock_color_xEnd: number;
-    centerBlock_xStart: number;
-    centerBlock_xEnd: number;
-    rightBlock_xStart: number;
-    rightBlock_xEnd: number;
-}
 class CalcOptions {
     options: IOptions = {
         domWidth: 0,
@@ -400,10 +360,6 @@ class CalcOptions {
             rightBlock_xEnd,
         }
     }
-}
-interface RFChartsDraw {
-    draw: () => void;
-    resize: () => void;
 }
 class WaterFallText implements IwaterFallTextInput {
     x: number = 0;
@@ -654,12 +610,12 @@ class DataOptions {
     // ctx: CanvasRenderingContext2D;
     calcOptions: CalcOptions;
     // 元数据
-    originData: IInputDataArr[] = [];
+    originData: Array<number>[] = [];
 
     // 用以存储渐变色lineargradient对象，避免重复创建
     originLineargradient: CanvasGradient[] = [];
     // 颜色数组
-    colorArr: IInputDataColorArr[] = [];
+    colorArr: Array<string>[] = [];
     dateArr: Array<WaterFallText | null> = [];
     checkIsDateNum = -1;
     /**
@@ -679,7 +635,7 @@ class DataOptions {
     setDateWaterText(date: WaterFallText | null) {
         this.dateArr.unshift(date);
     }
-    commit(data: IInputDataArr) {
+    commit(data: Array<number>) {
         if (!Array.isArray(data)) throw new Error('commit function need Array!');
         // data = this.filter({ data: data, target: this.calcOptions.options.centerBlock_Total });
         const { domHeight } = this.calcOptions.options;
