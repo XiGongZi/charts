@@ -12,17 +12,17 @@
 <body>
     <button onclick="start()">start</button>
     <button onclick="over()">over</button>
-    <div class="" style="height:233px;padding:20px;background-color: rgb(65, 65, 65);">
-        <div class="" id="app2" style="width:100%;height:100%"></div>
+    <div class="" style="height: 233px; padding: 20px; background-color: rgb(65, 65, 65)">
+        <div class="" id="app2" style="width: 100%; height: 100%"></div>
     </div>
 </body>
 <script type="module">
-    import {RFCharts} from "../src/createCanvas.ts"
-    import {GetSocketData} from "../src/getSocketData.ts"
-    import {debounce} from "lodash"
-// 暂时只考虑waterfall
+    import { RFCharts } from "../src/createCanvas.ts";
+    import { GetSocketData } from "../src/mock/getSocketData.ts";
+    import { debounce } from "lodash";
+    // 暂时只考虑waterfall
     let app0 = new RFCharts();
-    let canvas = app0.init(document.getElementById('app2'));
+    let canvas = app0.init(document.getElementById("app2"));
     canvas.setOptions({
         showRightText: false,
     });
@@ -31,23 +31,21 @@
     // canvas.update(color)
     // 绑定start事件 执行resize方法
     let socket = new GetSocketData();
-    window.start = function() {
-        socket.start((x,y) => {
+    window.start = function () {
+        socket.start((x, y) => {
             // console.log(y);
             // flow.update(x,y);
             canvas.update(y);
-        })
-    }
-    window.over = function() {
+        });
+    };
+    window.over = function () {
         socket.stop();
-    }
+    };
     // 当windows 尺寸变化时，调用canvas.resize() 重新设置canvas的尺寸
     window.onresize = debounce(() => {
         canvas.resize();
-    },80)
+    }, 80);
     // 当 windows尺寸变化时，且 持续200ms windows 尺寸不变化时，调用canvas.resize() 重新设置canvas的尺寸
-
-    
 </script>
 
 </html>
