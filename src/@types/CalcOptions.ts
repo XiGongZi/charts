@@ -1,10 +1,9 @@
 
-abstract class CalcOptions {
+interface CalcOptions {
     // 设置属性
-    setOptions(): void { }
+    setOptions: () => void
     // 重置属性
-    reset(): void { }
+    reset: () => void
     // 计算相应位置
-    getPosition(): void { }
-    constructor() { }
+    getPosition: () => void
 }

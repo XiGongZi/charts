@@ -1,4 +1,5 @@
 
+import { userDefaultSetting } from '../constant/userDefaultSetting';
 export class CalcOptions {
     options: IOptions = {
         domWidth: 0,

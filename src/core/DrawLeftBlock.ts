@@ -1,5 +1,4 @@
-
-
+import { CalcOptions } from "./CalcOptions"
 // 左侧文本与图例
 export class DrawLeftBlock implements RFChartsDraw {
     ctx: CanvasRenderingContext2D;

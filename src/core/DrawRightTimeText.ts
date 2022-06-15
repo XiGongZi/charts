@@ -1,4 +1,6 @@
-
+import { CalcOptions } from "./CalcOptions"
+import { DataOptions } from "./DataOptions"
+import { WaterFallText } from "./WaterFallText"
 // 绘制右侧时间文本
 export class DrawRightTimeText implements RFChartsDraw {
     ctx: CanvasRenderingContext2D;

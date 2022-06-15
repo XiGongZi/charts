@@ -1,3 +1,5 @@
+import { CalcOptions } from "./CalcOptions"
+import { DataOptions } from "./DataOptions"
 // 绘制中间瀑布图
 export class DrawCenterWaterfall implements RFChartsDraw {
     ctx: CanvasRenderingContext2D;

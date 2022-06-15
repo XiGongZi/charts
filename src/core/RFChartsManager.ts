@@ -1,3 +1,8 @@
+import { CalcOptions } from './CalcOptions';
+import { DataOptions } from './DataOptions';
+import { CreateCanvas } from './CreateCanvas';
+import { userDefaultSetting } from '../constant/userDefaultSetting';
+
 // 管控中心
 export class RFChartsManager {
     dom: HTMLElement;

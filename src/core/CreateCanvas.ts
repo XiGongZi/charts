@@ -1,4 +1,8 @@
-
+import { CalcOptions } from "./CalcOptions"
+import { DataOptions } from "./DataOptions"
+import { DrawLeftBlock } from "./DrawLeftBlock"
+import { DrawCenterWaterfall } from "./DrawCenterWaterfall"
+import { DrawRightTimeText } from "./DrawRightTimeText"
 export class CreateCanvas {
     dom: HTMLElement;
     canvasDomArr: ICanvasBase[] = [];

@@ -1,6 +1,5 @@
-
 // 用户设置的参数
-const userDefaultSetting: IUserSetOptions = {
+export const userDefaultSetting: IUserSetOptions = {
     /**
      * y轴的范围
      */

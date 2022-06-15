@@ -1,4 +1,5 @@
-
+import { WaterFallText } from "./WaterFallText"
+import { CalcOptions } from "./CalcOptions"
 // 做数据转换与存储
 export class DataOptions {
     // ctx: CanvasRenderingContext2D;
