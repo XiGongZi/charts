@@ -1,4 +1,6 @@
 
+
+import { WaterFallText } from "../core/WaterFallText";
 type TcheckIsNeedPopData = Array<number>[] | Array<WaterFallText | null> | CanvasGradient[] | Array<string>[]
 /**
 *
@@ -10,7 +12,7 @@ type TcheckIsNeedPopData = Array<number>[] | Array<WaterFallText | null> | Canva
 *
 */
 
-class Utils {
+export class Utils {
     constructor() { }
     static checkIsNeedPopData(arr: TcheckIsNeedPopData, limit: number) {
         if (arr.length >= limit + 20) arr.pop()
